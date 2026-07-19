@@ -1,0 +1,99 @@
+@import "tailwindcss";
+@import "@xyflow/react/dist/style.css";
+
+/* ─── Tema Sasori · marionetes de Suna ──────────────────────────────────── */
+@theme {
+  --color-sand: #c9a25f;
+  --color-sand-dim: #8a7c5e;
+  --color-sand-bright: #f4e4c0;
+  --color-ink: #14110d;
+  --color-ink-2: #1b160f;
+  --color-ink-3: #211a11;
+  --color-line: #33291a;
+  --color-line-2: #3a3020;
+  --color-blood: #a52222;
+  --color-blood-dark: #7a1515;
+  --color-leaf: #4a7c59;
+  --color-text: #e8dcc4;
+  --color-text-dim: #b8a877;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--color-ink);
+  color: var(--color-text);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* fundo de areia pontilhado */
+.sand-grid {
+  background-image: radial-gradient(circle, #2a2318 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+
+/* ── React Flow overrides ── */
+.react-flow {
+  background: var(--color-ink);
+}
+.react-flow__edge-path {
+  stroke: var(--color-sand);
+  stroke-width: 2;
+  opacity: 0.55;
+  filter: drop-shadow(0 0 3px rgba(201, 162, 95, 0.4));
+}
+.react-flow__edge.animated .react-flow__edge-path {
+  stroke-dasharray: 5;
+  animation: dashdraw 0.6s linear infinite;
+}
+.react-flow__connection-path {
+  stroke: var(--color-sand);
+  stroke-dasharray: 5 5;
+  stroke-width: 2;
+}
+.react-flow__handle {
+  width: 13px;
+  height: 13px;
+  background: var(--color-ink);
+  border: 2px solid var(--color-sand);
+}
+.react-flow__handle-right {
+  background: var(--color-sand);
+  cursor: crosshair;
+}
+.react-flow__attribution {
+  background: transparent;
+  color: #5f5540;
+}
+.react-flow__controls button {
+  background: var(--color-ink-2);
+  border-bottom: 1px solid var(--color-line);
+  color: var(--color-text-dim);
+  fill: var(--color-text-dim);
+}
+.react-flow__controls button:hover {
+  background: var(--color-ink-3);
+}
+.react-flow__minimap {
+  background: var(--color-ink-2) !important;
+}
+
+/* farol de status: pulso enquanto o agente trabalha */
+@keyframes sasori-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px var(--color-blood), 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 22px 2px rgba(165, 34, 34, 0.6);
+  }
+}
+.node-running {
+  animation: sasori-pulse 1s ease-in-out infinite;
+}
+
+@keyframes dashdraw {
+  from {
+    stroke-dashoffset: 10;
+  }
+}
