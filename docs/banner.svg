@@ -1,0 +1,47 @@
+<svg width="1200" height="240" viewBox="0 0 1200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="mark" cx="30%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#8a1c1c"/>
+      <stop offset="100%" stop-color="#4a0f0f"/>
+    </radialGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1b160f"/>
+      <stop offset="100%" stop-color="#14110d"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#2a2318" opacity="0.5"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="240" rx="18" fill="url(#bg)"/>
+  <rect width="1200" height="240" rx="18" fill="url(#dots)"/>
+  <rect x="0.5" y="0.5" width="1199" height="239" rx="17.5" stroke="#33291a"/>
+
+  <!-- fios de chakra decorativos -->
+  <path d="M -20 190 C 220 120, 420 250, 660 170 S 1080 90, 1240 160" stroke="#c9a25f" stroke-width="2" opacity="0.25" fill="none"/>
+  <path d="M -20 150 C 260 220, 520 80, 780 150 S 1120 210, 1240 130" stroke="#c9a25f" stroke-width="2" opacity="0.15" fill="none"/>
+  <circle cx="660" cy="170" r="4" fill="#f4e4c0" opacity="0.7" filter="url(#glow)"/>
+  <circle cx="985" cy="123" r="3" fill="#f4e4c0" opacity="0.5" filter="url(#glow)"/>
+
+  <!-- marca -->
+  <rect x="72" y="68" width="104" height="104" rx="26" fill="url(#mark)" filter="url(#glow)"/>
+  <text x="124" y="146" text-anchor="middle" font-family="'Hiragino Sans','Noto Sans JP',sans-serif" font-size="56" fill="#f0d9a8">糸</text>
+
+  <!-- nome -->
+  <text x="216" y="128" font-family="-apple-system,'Segoe UI',Inter,sans-serif" font-size="52" font-weight="800" letter-spacing="14" fill="#e8dcc4">SASORI</text>
+  <text x="220" y="164" font-family="-apple-system,'Segoe UI',Inter,sans-serif" font-size="17" letter-spacing="3" fill="#8a7c5e">orquestrador visual de agentes de IA</text>
+
+  <!-- selos -->
+  <g font-family="-apple-system,'Segoe UI',Inter,sans-serif" font-size="13" font-weight="600">
+    <rect x="856" y="96" width="132" height="30" rx="8" fill="#14110d" stroke="#3a3020"/>
+    <text x="922" y="116" text-anchor="middle" fill="#d8c79b">Claude Code</text>
+    <rect x="1000" y="96" width="84" height="30" rx="8" fill="#14110d" stroke="#3a3020"/>
+    <text x="1042" y="116" text-anchor="middle" fill="#d8c79b">Codex</text>
+    <rect x="856" y="134" width="228" height="30" rx="8" fill="#14110d" stroke="#3a3020"/>
+    <text x="970" y="154" text-anchor="middle" fill="#8a7c5e">macOS · Windows</text>
+  </g>
+</svg>
