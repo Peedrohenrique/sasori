@@ -19,6 +19,7 @@ import type {
   ProjectInfo,
   RunStatus,
   SasoriEvent,
+  TodoItem,
   ToolAvailability,
 } from "@sasori/shared";
 import { api } from "./api";
@@ -73,6 +74,8 @@ interface SasoriState {
   /** Pastas extras escolhidas pelo usuário onde buscar agentes prontos. */
   agentDirs: string[];
   statuses: Record<string, RunStatus>;
+  /** Plano vivo por nó: todo list que a CLI vai marcando durante o trabalho. */
+  todos: Record<string, TodoItem[]>;
   summaries: Summary[];
   running: boolean;
   runError: string | null;
@@ -110,6 +113,7 @@ export const useSasori = create<SasoriState>((set, get) => ({
   selectedId: null,
   agentDirs: [],
   statuses: {},
+  todos: {},
   summaries: [],
   running: false,
   runError: null,
@@ -202,9 +206,11 @@ export const useSasori = create<SasoriState>((set, get) => ({
     if (ev.type === "run-started") {
       const statuses: Record<string, RunStatus> = {};
       for (const id of ev.order) statuses[id] = "idle";
-      set({ running: true, statuses, summaries: [], runError: null, finalOutput: null });
+      set({ running: true, statuses, todos: {}, summaries: [], runError: null, finalOutput: null });
     } else if (ev.type === "node-status") {
       set({ statuses: { ...get().statuses, [ev.nodeId]: ev.status } });
+    } else if (ev.type === "node-todos") {
+      set({ todos: { ...get().todos, [ev.nodeId]: ev.items } });
     } else if (ev.type === "node-summary") {
       set({
         summaries: [...get().summaries, { nodeId: ev.nodeId, role: ev.role, summary: ev.summary, ts: Date.now() }],

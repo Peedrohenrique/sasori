@@ -152,6 +152,7 @@ export async function runFlow(flow: FlowMap, projectPath: string): Promise<{ run
           onEvent: (ev) => {
             if (ev.status) status(node.id, ev.status);
             if (ev.log) broadcast({ type: "node-log", runId, nodeId: node.id, line: ev.log });
+            if (ev.todos) broadcast({ type: "node-todos", runId, nodeId: node.id, items: ev.todos });
           },
         });
 

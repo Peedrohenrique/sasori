@@ -61,7 +61,14 @@ export const runClaudeCode: AgentRunner = ({ systemPrompt, userPrompt, cwd, onEv
             const content = ev.message?.content ?? [];
             for (const block of content) {
               if (block.type === "tool_use") {
-                if (EDIT_TOOLS.has(block.name)) emit({ status: "editing" });
+                if (block.name === "TodoWrite") {
+                  // plano vivo: o Claude Code mantém a própria todo list via TodoWrite —
+                  // repassamos cada atualização para a UI marcar em tempo real
+                  const todos = (block.input?.todos ?? [])
+                    .filter((t: any) => t?.content)
+                    .map((t: any) => ({ text: String(t.content), status: t.status ?? "pending" }));
+                  if (todos.length) emit({ todos });
+                } else if (EDIT_TOOLS.has(block.name)) emit({ status: "editing" });
                 else if (block.name === "Bash") emit({ status: "running-commands" });
               } else if (block.type === "text") {
                 emit({ status: "planning" });

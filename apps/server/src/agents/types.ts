@@ -1,4 +1,4 @@
-import type { RunStatus } from "@sasori/shared";
+import type { RunStatus, TodoItem } from "@sasori/shared";
 
 // ─── Interface comum dos runners ────────────────────────────────────────────
 // runClaudeCode.ts e runCodex.ts implementam esta interface. Para adicionar
@@ -8,6 +8,8 @@ export interface RunnerEvent {
   status?: RunStatus;
   /** linha crua de log (stdout), para depuração na UI */
   log?: string;
+  /** plano vivo: todo list que a própria CLI mantém enquanto trabalha */
+  todos?: TodoItem[];
 }
 
 export interface RunnerOptions {

@@ -49,7 +49,16 @@ export const runCodex: AgentRunner = ({ systemPrompt, userPrompt, cwd, onEvent, 
           const item = itemOf(ev);
           const itemType: string = item?.type ?? item?.item_type ?? ev.type ?? "";
 
-          if (itemType.includes("reasoning") || itemType === "turn.started" || itemType === "thread.started") {
+          if (itemType.includes("todo_list")) {
+            // plano vivo: o Codex emite a própria todo list nos eventos --json
+            const todos = (item?.items ?? [])
+              .filter((t: any) => t?.text)
+              .map((t: any) => ({
+                text: String(t.text),
+                status: t.completed ? ("completed" as const) : ("pending" as const),
+              }));
+            if (todos.length) emit({ todos });
+          } else if (itemType.includes("reasoning") || itemType === "turn.started" || itemType === "thread.started") {
             emit({ status: "planning" });
           } else if (itemType.includes("command_execution") || itemType.includes("exec_command")) {
             emit({ status: "running-commands" });

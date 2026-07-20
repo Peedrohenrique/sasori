@@ -44,6 +44,12 @@ export interface HumanNodeData {
   items: HumanTask[];
 }
 
+/** Item do plano vivo do agente (todo list emitida pela própria CLI durante o trabalho). */
+export interface TodoItem {
+  text: string;
+  status: "pending" | "in_progress" | "completed";
+}
+
 export interface FlowNode {
   id: string;
   type: NodeType;
@@ -129,6 +135,7 @@ export type SasoriEvent =
       summary: string;
     }
   | { type: "node-log"; runId: string; nodeId: string; line: string }
+  | { type: "node-todos"; runId: string; nodeId: string; items: TodoItem[] }
   | { type: "run-finished"; runId: string; ok: boolean; error?: string; finalOutput?: string };
 
 export const STATUS_LABELS: Record<RunStatus, string> = {
