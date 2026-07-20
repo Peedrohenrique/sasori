@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { FolderSearch, X } from "lucide-react";
-import type { AgentNodeData } from "@sasori/shared";
+import type { AgentNodeData } from "@marionette/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

@@ -1,4 +1,4 @@
-import type { RunStatus, TodoItem } from "@sasori/shared";
+import type { RunStatus, TodoItem } from "@marionette/shared";
 
 // ─── Interface comum dos runners ────────────────────────────────────────────
 // runClaudeCode.ts e runCodex.ts implementam esta interface. Para adicionar

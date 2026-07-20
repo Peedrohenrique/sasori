@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import type { BrowseResult, ProjectInfo } from "@sasori/shared";
+import type { BrowseResult, ProjectInfo } from "@marionette/shared";
 import { gitInfo } from "../git.js";
 
 // ─── Navegação de pastas + validação da pasta-alvo ──────────────────────────

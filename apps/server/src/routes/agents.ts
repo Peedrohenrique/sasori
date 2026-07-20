@@ -3,7 +3,7 @@ import { execFile } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import type { AgentPreset, ToolAvailability, ToolId } from "@sasori/shared";
+import type { AgentPreset, ToolAvailability, ToolId } from "@marionette/shared";
 
 // ─── Agentes pré-existentes + detecção das CLIs ─────────────────────────────
 // O usuário já tem agentes criados (arquivos .md com frontmatter em
@@ -88,8 +88,8 @@ export async function agentsRoutes(app: FastifyInstance) {
 
   app.get("/tools", async () => {
     const [claude, codex] = await Promise.all([
-      detectTool("claude-code", process.env.SASORI_CLAUDE_BIN || "claude"),
-      detectTool("codex", process.env.SASORI_CODEX_BIN || "codex"),
+      detectTool("claude-code", process.env.MARIONETTE_CLAUDE_BIN || "claude"),
+      detectTool("codex", process.env.MARIONETTE_CODEX_BIN || "codex"),
     ]);
     return [claude, codex];
   });

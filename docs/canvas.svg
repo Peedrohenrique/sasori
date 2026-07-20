@@ -94,9 +94,9 @@
   </g>
 
   <!-- badge branch -->
-  <rect x="48" y="40" width="330" height="34" rx="9" fill="#1b160f" stroke="#33291a"/>
+  <rect x="48" y="40" width="360" height="34" rx="9" fill="#1b160f" stroke="#33291a"/>
   <text x="64" y="62" font-size="12.5" fill="#8a7c5e">⎇  clone invocado: </text>
-  <text x="182" y="62" font-size="12.5" font-weight="600" fill="#c9a25f">sasori/refazer-landing</text>
+  <text x="182" y="62" font-size="12.5" font-weight="600" fill="#c9a25f">marionette/refazer-landing</text>
 
   <!-- dica -->
   <rect x="420" y="524" width="360" height="26" rx="13" fill="#1b160fcc" stroke="#2a2318"/>

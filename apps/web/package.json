@@ -1,5 +1,5 @@
 {
-  "name": "@sasori/web",
+  "name": "@marionette/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@sasori/shared": "*",
+    "@marionette/shared": "*",
     "@xyflow/react": "^12.4.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

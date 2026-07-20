@@ -27,8 +27,8 @@ export const runClaudeCode: AgentRunner = ({ systemPrompt, userPrompt, cwd, onEv
       "--dangerously-skip-permissions",
     ];
 
-    // SASORI_CLAUDE_BIN: caminho custom do binário (útil se fora do PATH)
-    const child = spawn(process.env.SASORI_CLAUDE_BIN || "claude", args, {
+    // MARIONETTE_CLAUDE_BIN: caminho custom do binário (útil se fora do PATH)
+    const child = spawn(process.env.MARIONETTE_CLAUDE_BIN || "claude", args, {
       cwd,
       shell: process.platform === "win32",
       signal,

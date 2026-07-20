@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ArrowUp, Check, Folder } from "lucide-react";
-import type { BrowseResult } from "@sasori/shared";
+import type { BrowseResult } from "@marionette/shared";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";

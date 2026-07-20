@@ -16,8 +16,8 @@ export const runCodex: AgentRunner = ({ systemPrompt, userPrompt, cwd, onEvent, 
   return new Promise((resolve) => {
     const args = ["exec", "--json", "--sandbox", "workspace-write", "--skip-git-repo-check", "-"];
 
-    // SASORI_CODEX_BIN: caminho custom do binário (útil se fora do PATH)
-    const child = spawn(process.env.SASORI_CODEX_BIN || "codex", args, {
+    // MARIONETTE_CODEX_BIN: caminho custom do binário (útil se fora do PATH)
+    const child = spawn(process.env.MARIONETTE_CODEX_BIN || "codex", args, {
       cwd,
       shell: process.platform === "win32",
       signal,

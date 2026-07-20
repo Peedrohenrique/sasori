@@ -1,6 +1,6 @@
 <div align="center">
 
-![Sasori](docs/banner.svg)
+![Marionette](docs/banner.svg)
 
 **Monte marionetes de IA num canvas, puxe os fios, e deixe elas programarem por você.**
 
@@ -14,13 +14,13 @@
 
 ---
 
-O **Sasori** é um orquestrador visual de agentes de IA para desenvolvimento de código.
+O **Marionette** é um orquestrador visual de agentes de IA para desenvolvimento de código.
 Você desenha um fluxo num canvas — cada nó é um agente com papel, instrução e ferramenta
 próprios — e conecta os nós com *fios de chakra* que definem a ordem. Ao executar, cada
 agente dispara o **Claude Code** ou o **Codex** em modo não-interativo, direto na pasta do
 SEU projeto, lendo/criando/editando arquivos e rodando comandos de verdade.
 
-![Canvas do Sasori](docs/canvas.svg)
+![Canvas do Marionette](docs/canvas.svg)
 
 ## ✨ O que ele faz
 
@@ -36,7 +36,7 @@ SEU projeto, lendo/criando/editando arquivos e rodando comandos de verdade.
 - 🗣 **Painel "Ombro"** — resumo curto do que cada agente fez + próximo passo sugerido.
 - 🌪 **Kage Bunshin (rede de segurança Git)** — os agentes trabalham numa branch clone;
   você decide se traz de volta (merge) ou dispersa (apaga). Nada acontece sem confirmação.
-- 💾 **Sem banco** — canvases salvos em JSON local (`~/.sasori/flows/`), com autosave.
+- 💾 **Sem banco** — canvases salvos em JSON local (`~/.marionette/flows/`), com autosave.
 - 🌗 **Dark & light** — tema Suna de noite ou de dia, com um clique (sol/lua na barra).
 
 ## 🚀 Começando
@@ -49,7 +49,7 @@ SEU projeto, lendo/criando/editando arquivos e rodando comandos de verdade.
 | [Codex](https://openai.com/codex) logado (`codex` no PATH) | ferramenta de agente |
 
 > Basta **uma** das duas CLIs — a UI mostra o que detectou. Binário fora do PATH?
-> Use `SASORI_CLAUDE_BIN` / `SASORI_CODEX_BIN`.
+> Use `MARIONETTE_CLAUDE_BIN` / `MARIONETTE_CODEX_BIN`.
 
 ```bash
 git clone <este-repo> && cd sasori
@@ -69,8 +69,8 @@ Abra **http://localhost:3000** — o server sobe junto na porta **4001**.
 3. **🙋 Tarefas de humano** — `+ humano` adiciona o bloco de checklist onde o fluxo pausa.
 4. **🕸 Conecte os fios** — bolinha direita de um nó → nó seguinte. Execução sequencial,
    a saída de cada agente vira contexto do próximo.
-5. **▶ Executar fluxo** — escreva a tarefa no nó verde e rode. Antes de começar, o Sasori
-   oferece **invocar um clone** (branch `sasori/<tarefa>`); ao final, **trazer de volta**
+5. **▶ Executar fluxo** — escreva a tarefa no nó verde e rode. Antes de começar, o Marionette
+   oferece **invocar um clone** (branch `marionette/<tarefa>`); ao final, **trazer de volta**
    (merge) ou **dispersar** (apagar), sempre com a sua confirmação. Pasta sem Git? Ele
    avisa e oferece `git init`.
 
@@ -106,7 +106,7 @@ flowchart LR
 ```
 
 ```
-sasori/
+marionette/
 ├── apps/web/           Next.js 15 + React Flow + Zustand + Tailwind v4 — o canvas
 ├── apps/server/        Fastify — subprocessos, SSE, Git
 │   └── src/agents/     runClaudeCode.ts · runCodex.ts (interface comum, plugável)
@@ -117,9 +117,9 @@ sasori/
 
 | Variável | Efeito |
 |---|---|
-| `SASORI_PORT` | porta do server (padrão `4001`) |
-| `SASORI_CLAUDE_BIN` | caminho custom do binário `claude` |
-| `SASORI_CODEX_BIN` | caminho custom do binário `codex` |
+| `MARIONETTE_PORT` | porta do server (padrão `4001`) |
+| `MARIONETTE_CLAUDE_BIN` | caminho custom do binário `claude` |
+| `MARIONETTE_CODEX_BIN` | caminho custom do binário `codex` |
 
 O Claude Code roda com `--dangerously-skip-permissions` para editar e rodar comandos sem
 prompt (por isso a rede de segurança Git existe 🙂). Prefere travar comandos shell? Troque
@@ -128,9 +128,9 @@ por `--permission-mode acceptEdits` em [`runClaudeCode.ts`](apps/server/src/agen
 ## 🔧 Problemas comuns
 
 - **"CLI não detectada"** — confira `claude --version` / `codex --version` no seu terminal;
-  se funcionam mas o Sasori não vê, o PATH do processo difere: use as variáveis acima.
+  se funcionam mas o Marionette não vê, o PATH do processo difere: use as variáveis acima.
 - **Nada acontece ao executar** — selecione a pasta do projeto e escreva a tarefa no nó verde.
-- **Fluxo com ciclo** — o Sasori recusa fios circulares; desfaça o laço.
+- **Fluxo com ciclo** — o Marionette recusa fios circulares; desfaça o laço.
 
 ## 🗺 Roadmap (v2)
 

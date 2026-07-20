@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import path from "node:path";
-import type { FlowMap, FlowNode, RunStatus } from "@sasori/shared";
+import type { FlowMap, FlowNode, RunStatus } from "@marionette/shared";
 import { RUNNERS } from "./agents/index.js";
 import { broadcast } from "./sse.js";
 
@@ -136,7 +136,7 @@ export async function runFlow(flow: FlowMap, projectPath: string): Promise<{ run
           ? `\nVocê SÓ pode criar/editar/apagar arquivos dentro de "${agent.scope}" (relativo à raiz do projeto: ${path.normalize(agent.scope)}). Pode LER o resto do projeto para contexto.`
           : "";
 
-        const systemPrompt = `Você é o agente "${agent.role}" de um fluxo orquestrado (Sasori).\n${agent.prompt}${scopeNote}`;
+        const systemPrompt = `Você é o agente "${agent.role}" de um fluxo orquestrado (Marionette).\n${agent.prompt}${scopeNote}`;
 
         const userPrompt =
           (upstream

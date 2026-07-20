@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import fs from "node:fs/promises";
-import type { RunRequest } from "@sasori/shared";
+import type { RunRequest } from "@marionette/shared";
 import { continueRun, isRunning, runFlow, stopRun } from "../orchestrator.js";
 
 export async function runRoutes(app: FastifyInstance) {

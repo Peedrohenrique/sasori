@@ -1,5 +1,5 @@
 import type { FastifyReply } from "fastify";
-import type { SasoriEvent } from "@sasori/shared";
+import type { SasoriEvent } from "@marionette/shared";
 
 // ─── Broker SSE ─────────────────────────────────────────────────────────────
 // Mantém as conexões abertas dos navegadores e transmite marcos de execução

@@ -7,7 +7,7 @@ import { flowsRoutes } from "./routes/flows.js";
 import { gitRoutes } from "./routes/git.js";
 import { runRoutes } from "./routes/run.js";
 
-// ─── Sasori server · dispara Claude Code / Codex e transmite status via SSE ─
+// ─── Marionette server · dispara Claude Code / Codex e transmite status via SSE
 
 const app = Fastify({ logger: { level: "warn" } });
 
@@ -24,12 +24,12 @@ app.get("/events", (req, reply) => {
   addClient(reply);
 });
 
-app.get("/health", async () => ({ ok: true, name: "sasori-server" }));
+app.get("/health", async () => ({ ok: true, name: "marionette-server" }));
 
-const PORT = Number(process.env.SASORI_PORT ?? 4001);
+const PORT = Number(process.env.MARIONETTE_PORT ?? 4001);
 try {
   await app.listen({ port: PORT, host: "127.0.0.1" });
-  console.log(`sasori-server ouvindo em http://localhost:${PORT}`);
+  console.log(`marionette-server ouvindo em http://localhost:${PORT}`);
 } catch (err) {
   console.error(err);
   process.exit(1);

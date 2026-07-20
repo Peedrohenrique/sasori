@@ -38,7 +38,7 @@ export async function gitInit(cwd: string): Promise<void> {
   await git(cwd, ["init"]);
 }
 
-/** Transforma o nome da tarefa em slug de branch: "Refazer landing" → sasori/refazer-landing */
+/** Transforma o nome da tarefa em slug de branch: "Refazer landing" → marionette/refazer-landing */
 export function branchSlug(task: string): string {
   const slug = task
     .toLowerCase()
@@ -47,7 +47,7 @@ export function branchSlug(task: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 40);
-  return `sasori/${slug || "tarefa"}`;
+  return `marionette/${slug || "tarefa"}`;
 }
 
 /** "Invocar clone": cria e troca para a branch do Sasori. Retorna {branch, previousBranch}. */
@@ -70,10 +70,10 @@ export async function mergeClone(cwd: string, branch: string, previousBranch: st
   const status = await git(cwd, ["status", "--porcelain"]);
   if (status.length > 0) {
     await git(cwd, ["add", "-A"]);
-    await git(cwd, ["commit", "-m", `sasori: trabalho do clone ${branch}`]);
+    await git(cwd, ["commit", "-m", `marionette: trabalho do clone ${branch}`]);
   }
   await git(cwd, ["checkout", previousBranch]);
-  await git(cwd, ["merge", "--no-ff", branch, "-m", `sasori: merge do clone ${branch}`]);
+  await git(cwd, ["merge", "--no-ff", branch, "-m", `marionette: merge do clone ${branch}`]);
 }
 
 /** "Dispersar clone": volta para a branch original e apaga a branch do clone. */

@@ -21,7 +21,7 @@ import type {
   SasoriEvent,
   TodoItem,
   ToolAvailability,
-} from "@sasori/shared";
+} from "@marionette/shared";
 import { api } from "./api";
 
 export type RFNode = Node<Record<string, unknown>>;

@@ -1,5 +1,5 @@
 {
-  "name": "@sasori/server",
+  "name": "@marionette/server",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@fastify/cors": "^10.0.2",
-    "@sasori/shared": "*",
+    "@marionette/shared": "*",
     "fastify": "^5.2.1"
   },
   "devDependencies": {

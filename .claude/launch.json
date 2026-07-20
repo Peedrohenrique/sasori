@@ -2,13 +2,13 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "sasori-server",
+      "name": "marionette-server",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "-w", "apps/server"],
       "port": 4001
     },
     {
-      "name": "sasori-web",
+      "name": "marionette-web",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "-w", "apps/web"],
       "port": 3000

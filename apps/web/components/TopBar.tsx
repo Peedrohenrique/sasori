@@ -23,7 +23,7 @@ function ThemeToggle() {
     setLight(next);
     document.documentElement.classList.toggle("light", next);
     try {
-      localStorage.setItem("sasori-theme", next ? "light" : "dark");
+      localStorage.setItem("marionette-theme", next ? "light" : "dark");
     } catch {
       /* modo anônimo */
     }
@@ -154,7 +154,7 @@ export function TopBar() {
           糸
         </div>
         <div>
-          <div className="text-lg font-extrabold tracking-[4px]">SASORI</div>
+          <div className="text-lg font-extrabold tracking-[4px]">MARIONETTE</div>
           <div className="text-[11px] tracking-wide text-sand-dim">orquestrador de agentes</div>
         </div>
       </div>
@@ -213,7 +213,7 @@ export function TopBar() {
         {project?.isGitRepo ? (
           <>
             <p className="text-xs leading-relaxed text-text-dim">
-              Invocar um clone cria a branch <code className="text-sand">sasori/…</code> e os agentes
+              Invocar um clone cria a branch <code className="text-sand">marionette/…</code> e os agentes
               trabalham nela. Sua branch <code className="text-sand">{project.branch}</code> fica
               intocada até você decidir trazer o trabalho de volta.
             </p>

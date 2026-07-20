@@ -1,6 +1,6 @@
-# Sasori — instruções para o Claude Code
+# Marionette — instruções para o Claude Code
 
-Orquestrador visual de agentes de IA: canvas React Flow onde o usuário monta um fluxo de
+Orquestrador visual de agentes de IA (ex-"Sasori"): canvas React Flow onde o usuário monta um fluxo de
 agentes que disparam **Claude Code** ou **Codex** (subprocessos não-interativos) num
 projeto-alvo da máquina dele. Tema: Naruto/Sasori (marionetes, fios de chakra, Kage Bunshin).
 
@@ -12,25 +12,25 @@ npm run typecheck  # tsc nos dois workspaces — rode antes de encerrar qualquer
 npm run build      # build de produção
 ```
 
-Dev servers via `.claude/launch.json` (`sasori-web`, `sasori-server`).
+Dev servers via `.claude/launch.json` (`marionette-web`, `marionette-server`).
 
 ## Arquitetura
 
 - `packages/shared/src/index.ts` — ÚNICA fonte dos tipos (FlowMap, FlowNode, RunStatus,
-  eventos SSE). Web e server importam `@sasori/shared`. Mudou contrato? Muda aqui primeiro.
+  eventos SSE). Web e server importam `@marionette/shared`. Mudou contrato? Muda aqui primeiro.
 - `apps/server` — Fastify. Rotas: `/fs/browse`, `/project/validate`, `/agents/presets` (POST),
   `/tools`, `/flows/*`, `/run`, `/run/continue`, `/run/stop`, `/git/*`, `/events` (SSE).
   - `src/agents/` — runners com interface comum (`types.ts`). Prompt vai por **stdin**
     (nunca argv — quoting no Windows). `shell: true` só no win32. Overrides de binário:
-    `SASORI_CLAUDE_BIN` / `SASORI_CODEX_BIN`.
+    `MARIONETTE_CLAUDE_BIN` / `MARIONETTE_CODEX_BIN`.
   - `src/orchestrator.ts` — ordem topológica, SEQUENCIAL (sem paralelismo no MVP). Nó
     `human` pausa numa Promise até `/run/continue`. Status são MARCOS (starting/planning/
     editing/running-commands/waiting-human/done/error), não micro-passos.
-  - `src/git.ts` — "Kage Bunshin": branch `sasori/<slug>`; merge/delete SÓ via rota chamada
+  - `src/git.ts` — "Kage Bunshin": branch `marionette/<slug>`; merge/delete SÓ via rota chamada
     após confirmação explícita do usuário na UI.
 - `apps/web` — Next 15 App Router + Tailwind v4 + Zustand (`lib/store.ts`) + React Flow.
   - Tipos de nó RF: `input-node`, `agent-node`, `human-node`, `output-node` (components/nodes.tsx).
-  - Canvas autosalva em `~/.sasori/flows/default.json` (debounce 800ms) — sem banco.
+  - Canvas autosalva em `~/.marionette/flows/default.json` (debounce 800ms) — sem banco.
   - Presets de agentes: `.md` com frontmatter de `~/.claude/agents`, `<projeto>/.claude/agents`
     e pastas custom (`agentDirs` no FlowMap, chips no Inspector).
 

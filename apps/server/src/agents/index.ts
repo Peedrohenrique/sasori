@@ -1,4 +1,4 @@
-import type { ToolId } from "@sasori/shared";
+import type { ToolId } from "@marionette/shared";
 import type { AgentRunner } from "./types.js";
 import { runClaudeCode } from "./runClaudeCode.js";
 import { runCodex } from "./runCodex.js";

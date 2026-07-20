@@ -4,7 +4,7 @@ import type {
   FlowMap,
   ProjectInfo,
   ToolAvailability,
-} from "@sasori/shared";
+} from "@marionette/shared";
 
 export const API = "http://localhost:4001";
 

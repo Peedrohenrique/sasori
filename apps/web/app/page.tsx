@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { SasoriEvent } from "@sasori/shared";
+import type { SasoriEvent } from "@marionette/shared";
 import { Canvas } from "@/components/Canvas";
 import { Inspector } from "@/components/Inspector";
 import { OmbroPanel } from "@/components/OmbroPanel";

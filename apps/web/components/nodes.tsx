@@ -7,7 +7,7 @@ import {
   type AgentNodeData,
   type HumanTask,
   type RunStatus,
-} from "@sasori/shared";
+} from "@marionette/shared";
 import { Check, ListTodo, Plus, UserRound, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -73,7 +73,7 @@ export function InputNode({ id, selected }: NodeProps) {
       </div>
       <textarea
         className="nodrag nowheel h-48 w-full resize-none overflow-auto rounded-xl border border-line bg-ink p-3.5 text-sm leading-relaxed text-text outline-none placeholder:text-ph focus:border-sand"
-        placeholder="o que o Sasori deve fazer?"
+        placeholder="o que as marionetes devem fazer?"
         value={task}
         onChange={(e) => updateTask(id, e.target.value)}
       />
