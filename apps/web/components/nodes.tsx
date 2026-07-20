@@ -270,7 +270,7 @@ export function OutputNode({ id, selected }: NodeProps) {
         <span className="h-2 w-2 rounded-full bg-sand" /> resultado final
         <StatusLight status={status} />
       </div>
-      <div className="nowheel nodrag max-h-64 min-h-[5.5rem] overflow-auto whitespace-pre-wrap rounded-xl bg-ink p-3.5 text-[13px] leading-relaxed">
+      <div className="nowheel nodrag h-48 overflow-auto whitespace-pre-wrap rounded-xl border border-line bg-ink p-3.5 text-[13px] leading-relaxed">
         {runError ? (
           <span className="text-blood">{runError}</span>
         ) : finalOutput ? (
