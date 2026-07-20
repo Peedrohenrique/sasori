@@ -71,7 +71,7 @@ export default function Home() {
         <Canvas />
         <Inspector />
         <OmbroPanel />
-        <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full border border-line bg-ink-2/80 px-3 py-1 text-[11px] text-[#6a5e46]">
+        <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full border border-line bg-ink-2/80 px-3 py-1 text-[11px] text-sand-dim">
           arraste os nós · puxe um fio da bolinha direita até outro nó · clique num agente para editar
         </div>
       </div>

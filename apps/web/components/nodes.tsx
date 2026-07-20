@@ -40,8 +40,8 @@ function StatusLight({ status }: { status: RunStatus }) {
 
 function shell(selected: boolean, status: RunStatus) {
   return cn(
-    "w-[380px] rounded-2xl border border-line-2 bg-gradient-to-b from-ink-3 to-[#191410] p-4 shadow-[0_10px_30px_rgba(0,0,0,.45)]",
-    selected && "border-sand shadow-[0_0_0_1px_#c9a25f,0_12px_36px_rgba(0,0,0,.55)]",
+    "w-[380px] rounded-2xl border border-line-2 bg-gradient-to-b from-ink-3 to-card-2 p-4 shadow-[0_10px_30px_var(--color-shadow)]",
+    selected && "border-sand shadow-[0_0_0_1px_var(--color-sand),0_12px_36px_var(--color-shadow)]",
     status === "done" && "border-leaf",
     status === "error" && "border-blood",
     (ACTIVE.includes(status) || status === "waiting-human") && "node-running",
@@ -72,7 +72,7 @@ export function InputNode({ id, selected }: NodeProps) {
         <span className="h-2 w-2 rounded-full bg-leaf" /> tarefa inicial
       </div>
       <textarea
-        className="nodrag nowheel h-48 w-full resize-none overflow-auto rounded-xl border border-line bg-ink p-3.5 text-sm leading-relaxed text-text outline-none placeholder:text-[#5f5540] focus:border-sand"
+        className="nodrag nowheel h-48 w-full resize-none overflow-auto rounded-xl border border-line bg-ink p-3.5 text-sm leading-relaxed text-text outline-none placeholder:text-ph focus:border-sand"
         placeholder="o que o Sasori deve fazer?"
         value={task}
         onChange={(e) => updateTask(id, e.target.value)}
@@ -112,7 +112,7 @@ function LivePlan({ nodeId }: { nodeId: string }) {
             <span
               className={cn(
                 "text-[13px] leading-snug",
-                t.status === "completed" && "text-[#5f5540] line-through",
+                t.status === "completed" && "text-ph line-through",
                 t.status === "in_progress" && "font-semibold text-sand-bright",
                 t.status === "pending" && "text-text-dim",
               )}
@@ -147,7 +147,7 @@ export function AgentNode({ id, data, selected }: NodeProps) {
         )}
       </div>
       <div className="nowheel nodrag mt-2.5 max-h-32 min-h-[3.4rem] overflow-auto text-[13px] leading-relaxed text-text-dim">
-        {agent.prompt || <span className="italic text-[#5f5540]">sem instrução — clique para editar</span>}
+        {agent.prompt || <span className="italic text-ph">sem instrução — clique para editar</span>}
       </div>
       <LivePlan nodeId={id} />
       <DeleteButton id={id} />
@@ -192,9 +192,9 @@ export function HumanNode({ id, selected }: NodeProps) {
       </div>
 
       {/* bloco de anotações pautado */}
-      <div className="rounded-xl border border-line bg-ink p-1.5 [background-image:repeating-linear-gradient(transparent,transparent_35px,#221c12_35px,#221c12_36px)]">
+      <div className="rounded-xl border border-line bg-ink p-1.5 [background-image:repeating-linear-gradient(transparent,transparent_35px,var(--color-rule)_35px,var(--color-rule)_36px)]">
         {items.length === 0 && (
-          <p className="px-2.5 py-3 text-[13px] italic text-[#5f5540]">
+          <p className="px-2.5 py-3 text-[13px] italic text-ph">
             liste aqui o que só um humano pode fazer (criar conta, pegar API key, aprovar algo…)
           </p>
         )}
@@ -213,7 +213,7 @@ export function HumanNode({ id, selected }: NodeProps) {
               <span
                 className={cn(
                   "flex-1 truncate text-[13px]",
-                  t.done ? "text-[#5f5540] line-through" : "text-text",
+                  t.done ? "text-ph line-through" : "text-text",
                 )}
               >
                 {t.text}
@@ -230,7 +230,7 @@ export function HumanNode({ id, selected }: NodeProps) {
         <div className="flex h-9 items-center gap-2.5 px-2">
           <Plus size={14} className="shrink-0 text-sand-dim" />
           <input
-            className="nodrag w-full bg-transparent text-[13px] text-text outline-none placeholder:text-[#5f5540]"
+            className="nodrag w-full bg-transparent text-[13px] text-text outline-none placeholder:text-ph"
             placeholder="adicionar tarefa…"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -276,7 +276,7 @@ export function OutputNode({ id, selected }: NodeProps) {
         ) : finalOutput ? (
           <span className="text-text">{finalOutput}</span>
         ) : (
-          <span className="italic text-[#5f5540]">o resultado aparece aqui</span>
+          <span className="italic text-ph">o resultado aparece aqui</span>
         )}
       </div>
       <Handle type="target" position={Position.Left} />

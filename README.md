@@ -37,6 +37,7 @@ SEU projeto, lendo/criando/editando arquivos e rodando comandos de verdade.
 - 🌪 **Kage Bunshin (rede de segurança Git)** — os agentes trabalham numa branch clone;
   você decide se traz de volta (merge) ou dispersa (apaga). Nada acontece sem confirmação.
 - 💾 **Sem banco** — canvases salvos em JSON local (`~/.sasori/flows/`), com autosave.
+- 🌗 **Dark & light** — tema Suna de noite ou de dia, com um clique (sol/lua na barra).
 
 ## 🚀 Começando
 

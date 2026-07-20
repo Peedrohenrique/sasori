@@ -1,14 +1,40 @@
 "use client";
 
-import { useState } from "react";
-import { FolderOpen, GitBranch, Play, Plus, Square, UserRound } from "lucide-react";
+import { useEffect, useState } from "react";
+import { FolderOpen, GitBranch, Moon, Play, Plus, Square, Sun, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { api } from "@/lib/api";
 import { refreshPresets, useSasori } from "@/lib/store";
 import { FolderPicker } from "./FolderPicker";
 
-// ─── Barra superior: projeto · agentes · clone (git) · executar ─────────────
+// ─── Barra superior: projeto · agentes · clone (git) · tema · executar ──────
+
+/** Alterna dark/light aplicando a classe `light` no <html> (persistido). */
+function ThemeToggle() {
+  const [light, setLight] = useState(false);
+
+  useEffect(() => {
+    setLight(document.documentElement.classList.contains("light"));
+  }, []);
+
+  const toggle = () => {
+    const next = !light;
+    setLight(next);
+    document.documentElement.classList.toggle("light", next);
+    try {
+      localStorage.setItem("sasori-theme", next ? "light" : "dark");
+    } catch {
+      /* modo anônimo */
+    }
+  };
+
+  return (
+    <Button variant="ghost" size="icon" onClick={toggle} title={light ? "modo escuro" : "modo claro"}>
+      {light ? <Moon size={14} /> : <Sun size={14} />}
+    </Button>
+  );
+}
 
 export function TopBar() {
   const project = useSasori((s) => s.project);
@@ -161,6 +187,8 @@ export function TopBar() {
         <Button variant="ghost" size="sm" onClick={() => addHumanNode()}>
           <UserRound size={13} /> humano
         </Button>
+
+        <ThemeToggle />
 
         {running ? (
           <Button variant="subtle" size="sm" onClick={() => api.stopRun()}>
