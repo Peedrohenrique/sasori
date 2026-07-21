@@ -7,6 +7,9 @@ import { flowsRoutes } from "./routes/flows.js";
 import { gitRoutes } from "./routes/git.js";
 import { runRoutes } from "./routes/run.js";
 import { workspacesRoutes } from "./routes/workspaces.js";
+import { historyRoutes } from "./routes/history.js";
+import { templatesRoutes } from "./routes/templates.js";
+import { plannerRoutes } from "./routes/planner.js";
 
 // ─── Marionette server · dispara Claude Code / Codex e transmite status via SSE
 
@@ -20,6 +23,9 @@ await app.register(flowsRoutes);
 await app.register(workspacesRoutes);
 await app.register(gitRoutes);
 await app.register(runRoutes);
+await app.register(historyRoutes);
+await app.register(templatesRoutes);
+await app.register(plannerRoutes);
 
 // stream de eventos (marcos de execução) para o front
 app.get("/events", (req, reply) => {

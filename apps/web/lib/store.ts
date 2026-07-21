@@ -20,9 +20,11 @@ import type {
   RunStatus,
   SasoriEvent,
   SkillPreset,
+  TaskNodeData,
   TodoItem,
   ToolAvailability,
   Workspace,
+  WorkTaskStatus,
 } from "@marionette/shared";
 import { api } from "./api";
 
@@ -96,18 +98,23 @@ interface SasoriState {
   runError: string | null;
   finalOutput: string | null;
   clone: CloneInfo | null;
+  logs: Record<string, string[]>;
+  taskStatuses: Record<string, WorkTaskStatus>;
+  resourcePanel: "skills" | "presets" | "templates" | "history" | null;
 
   onNodesChange: (changes: NodeChange<RFNode>[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
   onConnect: (conn: Connection) => void;
   addAgentNode: (preset?: AgentPreset) => void;
   addHumanNode: () => void;
+  addTaskNode: () => void;
   addAgentDir: (dir: string) => void;
   removeAgentDir: (dir: string) => void;
   deleteNode: (id: string) => void;
   updateAgent: (id: string, patch: Partial<AgentNodeData>) => void;
   updateTask: (id: string, task: string) => void;
   updateHumanItems: (id: string, items: HumanTask[]) => void;
+  updateTaskBoard: (id: string, data: Partial<TaskNodeData>) => void;
   select: (id: string | null) => void;
   setProject: (p: ProjectInfo | null) => void;
   setWorkspaces: (workspaces: Workspace[]) => void;
@@ -117,6 +124,7 @@ interface SasoriState {
   setSkillLibrary: (skills: SkillPreset[]) => void;
   setClone: (c: CloneInfo | null) => void;
   setRunning: (r: boolean) => void;
+  setResourcePanel: (panel: SasoriState["resourcePanel"]) => void;
   applyEvent: (ev: SasoriEvent) => void;
   toFlowMap: () => FlowMap;
   loadFlowMap: (flow: FlowMap) => void;
@@ -140,6 +148,9 @@ export const useSasori = create<SasoriState>((set, get) => ({
   runError: null,
   finalOutput: null,
   clone: null,
+  logs: {},
+  taskStatuses: {},
+  resourcePanel: null,
 
   onNodesChange: (changes) => set({ nodes: applyNodeChanges(changes, get().nodes) }),
   onEdgesChange: (changes) => set({ edges: applyEdgeChanges(changes, get().edges) }),
@@ -185,6 +196,14 @@ export const useSasori = create<SasoriState>((set, get) => ({
     });
   },
 
+  addTaskNode: () => {
+    const id = uid();
+    set({
+      nodes: [...get().nodes, { id, type: "tasks-node", position: { x: 420, y: 260 }, data: { objective: "", tasks: [] } }],
+      selectedId: id,
+    });
+  },
+
   addAgentDir: (dir) => {
     if (get().agentDirs.includes(dir)) return;
     set({ agentDirs: [...get().agentDirs, dir] });
@@ -216,6 +235,9 @@ export const useSasori = create<SasoriState>((set, get) => ({
   updateHumanItems: (id, items) =>
     set({ nodes: get().nodes.map((n) => (n.id === id ? { ...n, data: { ...n.data, items } } : n)) }),
 
+  updateTaskBoard: (id, patch) =>
+    set({ nodes: get().nodes.map((n) => (n.id === id ? { ...n, data: { ...(n.data as unknown as TaskNodeData), ...patch } } : n)) }),
+
   select: (id) => set({ selectedId: id }),
   setProject: (project) => set({ project }),
   setWorkspaces: (workspaces) => set({ workspaces }),
@@ -225,12 +247,14 @@ export const useSasori = create<SasoriState>((set, get) => ({
   setSkillLibrary: (skillLibrary) => set({ skillLibrary }),
   setClone: (clone) => set({ clone }),
   setRunning: (running) => set({ running }),
+  setResourcePanel: (resourcePanel) => set({ resourcePanel }),
 
   applyEvent: (ev) => {
     if (ev.type === "run-started") {
       const statuses: Record<string, RunStatus> = {};
       for (const id of ev.order) statuses[id] = "idle";
       set({ running: true, statuses, todos: {}, summaries: [], runError: null, finalOutput: null });
+      set({ logs: {}, taskStatuses: Object.fromEntries((ev.tasks ?? []).map((task) => [task.id, task.status])) });
     } else if (ev.type === "node-status") {
       set({ statuses: { ...get().statuses, [ev.nodeId]: ev.status } });
     } else if (ev.type === "node-todos") {
@@ -239,6 +263,11 @@ export const useSasori = create<SasoriState>((set, get) => ({
       set({
         summaries: [...get().summaries, { nodeId: ev.nodeId, role: ev.role, summary: ev.summary, ts: Date.now() }],
       });
+    } else if (ev.type === "node-log") {
+      const logs = [...(get().logs[ev.nodeId] ?? []), ev.line].slice(-1000);
+      set({ logs: { ...get().logs, [ev.nodeId]: logs } });
+    } else if (ev.type === "task-status") {
+      set({ taskStatuses: { ...get().taskStatuses, [ev.task.id]: ev.task.status } });
     } else if (ev.type === "run-finished") {
       set({
         running: false,
@@ -255,6 +284,7 @@ export const useSasori = create<SasoriState>((set, get) => ({
       t === "input-node" ? ("input" as const)
       : t === "output-node" ? ("output" as const)
       : t === "human-node" ? ("human" as const)
+      : t === "tasks-node" ? ("tasks" as const)
       : ("agent" as const);
     return {
       id: workspace?.flowId ?? "default",
@@ -269,6 +299,7 @@ export const useSasori = create<SasoriState>((set, get) => ({
         agent: n.type === "agent-node" ? (n.data.agent as AgentNodeData) : undefined,
         input: n.type === "input-node" ? { task: (n.data.task as string) ?? "" } : undefined,
         human: n.type === "human-node" ? { items: (n.data.items as HumanTask[]) ?? [] } : undefined,
+        tasks: n.type === "tasks-node" ? (n.data as unknown as TaskNodeData) : undefined,
       })),
       edges: edges.map((e) => ({ id: e.id, source: e.source, target: e.target })),
     };
@@ -282,6 +313,8 @@ export const useSasori = create<SasoriState>((set, get) => ({
       summaries: [],
       runError: null,
       finalOutput: null,
+      logs: {},
+      taskStatuses: {},
       clone: null,
       agentDirs: flow.agentDirs ?? [],
       nodes: flow.nodes.map((n) => ({
@@ -290,14 +323,16 @@ export const useSasori = create<SasoriState>((set, get) => ({
           n.type === "input" ? "input-node"
           : n.type === "output" ? "output-node"
           : n.type === "human" ? "human-node"
+          : n.type === "tasks" ? "tasks-node"
           : "agent-node",
         position: upgradedStarterPosition(n.id, n.position),
         data:
           n.type === "agent" ? { agent: n.agent }
           : n.type === "input" ? { task: n.input?.task ?? "" }
           : n.type === "human" ? { items: n.human?.items ?? [] }
+          : n.type === "tasks" ? n.tasks ?? { objective: "", tasks: [] }
           : {},
-      })),
+      })) as RFNode[],
       edges: flow.edges.map((e) => ({ id: e.id, source: e.source, target: e.target })),
     }),
 }));

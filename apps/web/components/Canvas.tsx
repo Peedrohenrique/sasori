@@ -11,7 +11,7 @@ import {
   type ReactFlowInstance,
 } from "@xyflow/react";
 import { useSasori, type RFNode } from "@/lib/store";
-import { AgentNode, HumanNode, InputNode, OutputNode } from "./nodes";
+import { AgentNode, HumanNode, InputNode, OutputNode, TaskNode } from "./nodes";
 
 export function Canvas() {
   const initialFitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -29,6 +29,7 @@ export function Canvas() {
       "agent-node": AgentNode,
       "human-node": HumanNode,
       "output-node": OutputNode,
+      "tasks-node": TaskNode,
     }),
     [],
   );

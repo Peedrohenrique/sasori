@@ -3,7 +3,25 @@
 /** Ferramenta de IA que executa o agente como subprocesso. */
 export type ToolId = "claude-code" | "codex";
 
-export type NodeType = "input" | "agent" | "output" | "human";
+export type NodeType = "input" | "agent" | "output" | "human" | "tasks";
+
+export type WorkTaskStatus = "blocked" | "ready" | "running" | "completed" | "failed";
+
+export interface WorkTask {
+  id: string;
+  title: string;
+  description: string;
+  status: WorkTaskStatus;
+  dependsOn: string[];
+  assignedAgentId?: string;
+  result?: string;
+}
+
+export interface TaskNodeData {
+  objective: string;
+  tasks: WorkTask[];
+  generatedAt?: string;
+}
 
 /** Marcos de status emitidos via SSE durante a execução de um nó. */
 export type RunStatus =
@@ -63,6 +81,7 @@ export interface FlowNode {
   agent?: AgentNodeData; // quando type === "agent"
   input?: InputNodeData; // quando type === "input"
   human?: HumanNodeData; // quando type === "human"
+  tasks?: TaskNodeData; // quando type === "tasks"
 }
 
 export interface FlowEdge {
@@ -107,7 +126,7 @@ export interface AgentPreset {
   description: string;
   prompt: string;
   /** "user" = ~/.claude/agents · "project" = <projeto>/.claude/agents · "custom" = pasta escolhida */
-  source: "user" | "project" | "custom";
+  source: "user" | "project" | "custom" | "marionette";
   /** Pasta de origem (para exibir/agrupar fontes custom). */
   dir: string;
 }
@@ -118,6 +137,54 @@ export interface SkillPreset {
   description: string;
   filePath: string;
   source: "user" | "project" | "marionette";
+}
+
+export interface SkillDocument extends SkillPreset {
+  content: string;
+}
+
+export interface FlowTemplate {
+  id: string;
+  name: string;
+  description: string;
+  flow: FlowMap;
+}
+
+export interface NodeRunRecord {
+  nodeId: string;
+  role: string;
+  status: RunStatus;
+  logs: string[];
+  summary?: string;
+  output?: string;
+  startedAt?: string;
+  finishedAt?: string;
+}
+
+export interface RunRecord {
+  id: string;
+  workspaceId: string;
+  flowId: string;
+  projectPath: string;
+  status: "running" | "completed" | "failed" | "stopped";
+  startedAt: string;
+  finishedAt?: string;
+  flow: FlowMap;
+  tasks: WorkTask[];
+  nodes: Record<string, NodeRunRecord>;
+  finalOutput?: string;
+  error?: string;
+}
+
+export interface PlanRequest {
+  flow: FlowMap;
+  projectPath: string;
+  objective: string;
+  tool?: ToolId;
+}
+
+export interface PlanResponse {
+  tasks: WorkTask[];
 }
 
 // ─── Server API ─────────────────────────────────────────────────────────────
@@ -150,12 +217,13 @@ export interface ToolAvailability {
 export interface RunRequest {
   flow: FlowMap;
   projectPath: string;
+  workspaceId?: string;
 }
 
 // ─── Eventos SSE ────────────────────────────────────────────────────────────
 
 export type SasoriEvent =
-  | { type: "run-started"; runId: string; order: string[] }
+  | { type: "run-started"; runId: string; order: string[]; tasks?: WorkTask[] }
   | { type: "node-status"; runId: string; nodeId: string; status: RunStatus; detail?: string }
   | {
       type: "node-summary"; // bloco "Ombro": o que foi feito + próximo passo
@@ -165,6 +233,7 @@ export type SasoriEvent =
       summary: string;
     }
   | { type: "node-log"; runId: string; nodeId: string; line: string }
+  | { type: "task-status"; runId: string; task: WorkTask }
   | { type: "node-todos"; runId: string; nodeId: string; items: TodoItem[] }
   | { type: "run-finished"; runId: string; ok: boolean; error?: string; finalOutput?: string };
 

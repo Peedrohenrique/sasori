@@ -2,7 +2,11 @@ import type {
   AgentPreset,
   BrowseResult,
   FlowMap,
+  FlowTemplate,
   ProjectInfo,
+  PlanResponse,
+  RunRecord,
+  SkillDocument,
   ToolAvailability,
   Workspace,
   SkillPreset,
@@ -36,6 +40,13 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ projectPath: projectPath ?? undefined }),
     }),
+  readSkill: (filePath: string) => req<{ filePath: string; content: string }>("/skills/read", { method: "POST", body: JSON.stringify({ filePath }) }),
+  saveSkill: (body: { name: string; description?: string; content: string; scope: "global" | "project"; projectPath?: string }) => req<SkillDocument>("/skills/save", { method: "POST", body: JSON.stringify(body) }),
+  deleteSkill: (filePath: string, projectPath?: string | null) => req<{ ok: boolean }>("/skills/delete", { method: "POST", body: JSON.stringify({ filePath, projectPath: projectPath ?? undefined }) }),
+  savePreset: (body: { name: string; description?: string; prompt: string; scope: "global" | "project"; projectPath?: string }) => req<AgentPreset>("/agents/presets/save", { method: "POST", body: JSON.stringify(body) }),
+  deletePreset: (dir: string, slug: string, projectPath?: string | null) => req<{ ok: boolean }>("/agents/presets/delete", { method: "POST", body: JSON.stringify({ dir, slug, projectPath: projectPath ?? undefined }) }),
+  templates: () => req<FlowTemplate[]>("/templates"),
+  plan: (body: { flow: FlowMap; projectPath: string; objective: string; tool?: "claude-code" | "codex" }) => req<PlanResponse>("/plan", { method: "POST", body: JSON.stringify(body) }),
   tools: () => req<ToolAvailability[]>("/tools"),
   loadFlow: (id: string) => req<FlowMap>(`/flows/${id}`),
   saveFlow: (flow: FlowMap) =>
@@ -53,8 +64,10 @@ export const api = {
     }),
   deleteWorkspace: (workspace: Workspace) =>
     req<{ ok: boolean }>(`/workspaces/${workspace.id}`, { method: "DELETE" }),
-  run: (flow: FlowMap, projectPath: string) =>
-    req<{ runId: string }>("/run", { method: "POST", body: JSON.stringify({ flow, projectPath }) }),
+  run: (flow: FlowMap, projectPath: string, workspaceId?: string | null) =>
+    req<{ runId: string }>("/run", { method: "POST", body: JSON.stringify({ flow, projectPath, workspaceId: workspaceId ?? undefined }) }),
+  history: (workspaceId: string) => req<RunRecord[]>(`/history/${workspaceId}`),
+  historyItem: (workspaceId: string, runId: string) => req<RunRecord>(`/history/${workspaceId}/${runId}`),
   stopRun: () => req<{ ok: boolean }>("/run/stop", { method: "POST" }),
   continueRun: () => req<{ ok: boolean }>("/run/continue", { method: "POST" }),
   gitInit: (path: string) =>

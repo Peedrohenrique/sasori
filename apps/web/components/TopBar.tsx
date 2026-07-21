@@ -11,6 +11,8 @@ import {
   Sun,
   UserRound,
   Workflow,
+  ListTodo,
+  LibraryBig,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -52,9 +54,12 @@ export function TopBar() {
   const nodes = useSasori((s) => s.nodes);
   const addAgentNode = useSasori((s) => s.addAgentNode);
   const addHumanNode = useSasori((s) => s.addHumanNode);
+  const addTaskNode = useSasori((s) => s.addTaskNode);
   const toFlowMap = useSasori((s) => s.toFlowMap);
   const setProject = useSasori((s) => s.setProject);
   const setClone = useSasori((s) => s.setClone);
+  const setResourcePanel = useSasori((s) => s.setResourcePanel);
+  const activeWorkspaceId = useSasori((s) => s.activeWorkspaceId);
 
   const [preRunOpen, setPreRunOpen] = useState(false);
   const [postRunOpen, setPostRunOpen] = useState(false);
@@ -71,7 +76,7 @@ export function TopBar() {
   const startRun = async () => {
     setPreRunOpen(false);
     try {
-      await api.run(toFlowMap(), project!.path);
+      await api.run(toFlowMap(), project!.path, activeWorkspaceId);
     } catch (e: any) {
       flash(e.message);
     }
@@ -180,6 +185,14 @@ export function TopBar() {
 
         <Button variant="ghost" size="sm" onClick={() => addHumanNode()}>
           <UserRound size={13} /> humano
+        </Button>
+
+        <Button variant="ghost" size="sm" onClick={() => addTaskNode()}>
+          <ListTodo size={13} /> tarefas
+        </Button>
+
+        <Button variant="ghost" size="sm" onClick={() => setResourcePanel("skills")}>
+          <LibraryBig size={13} /> biblioteca
         </Button>
 
         <ThemeToggle />

@@ -7,6 +7,7 @@ import { Inspector } from "@/components/Inspector";
 import { OmbroPanel } from "@/components/OmbroPanel";
 import { TopBar } from "@/components/TopBar";
 import { WorkspaceSidebar } from "@/components/WorkspaceSidebar";
+import { ResourcePanel } from "@/components/ResourcePanel";
 import { API, api } from "@/lib/api";
 import { openWorkspace, refreshPresets, refreshSkills, useSasori } from "@/lib/store";
 
@@ -88,6 +89,7 @@ export default function Home() {
           <Canvas />
           <Inspector />
           <OmbroPanel />
+          <ResourcePanel />
           <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full border border-line bg-ink-2/80 px-3 py-1 text-[11px] text-sand-dim">
             arraste os nós · puxe um fio da bolinha direita até outro nó · clique num agente para editar
           </div>

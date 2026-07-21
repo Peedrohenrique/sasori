@@ -39,6 +39,7 @@ export function Inspector() {
 
   const groups: { label: string; items: typeof presets }[] = [
     { label: "seus agentes (~/.claude/agents)", items: presets.filter((p) => p.source === "user") },
+    { label: "presets do Marionette", items: presets.filter((p) => p.source === "marionette") },
     { label: "do projeto (.claude/agents)", items: presets.filter((p) => p.source === "project") },
     ...agentDirs.map((dir) => ({
       label: `pasta: ${shortDir(dir)}`,

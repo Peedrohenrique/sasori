@@ -6,9 +6,11 @@ import {
   STATUS_LABELS,
   type AgentNodeData,
   type HumanTask,
+  type TaskNodeData,
+  type WorkTask,
   type RunStatus,
 } from "@marionette/shared";
-import { Check, ListTodo, Plus, UserRound, X } from "lucide-react";
+import { Check, ListTodo, Plus, Sparkles, UserRound, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useSasori } from "@/lib/store";
@@ -256,6 +258,53 @@ export function HumanNode({ id, selected }: NodeProps) {
       <DeleteButton id={id} />
       <Handle type="target" position={Position.Left} />
       <Handle type="source" position={Position.Right} />
+    </div>
+  );
+}
+
+export function TaskNode({ id, selected }: NodeProps) {
+  const data = useSasori((s) => (s.nodes.find((n) => n.id === id)?.data as unknown as TaskNodeData) ?? { objective: "", tasks: [] });
+  const agents = useSasori((s) => s.nodes.filter((node) => node.type === "agent-node"));
+  const project = useSasori((s) => s.project);
+  const toFlowMap = useSasori((s) => s.toFlowMap);
+  const updateTaskBoard = useSasori((s) => s.updateTaskBoard);
+  const taskStatuses = useSasori((s) => s.taskStatuses);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const updateTask = (taskId: string, patch: Partial<WorkTask>) =>
+    updateTaskBoard(id, { tasks: data.tasks.map((task) => task.id === taskId ? { ...task, ...patch } : task) });
+  const addTask = () => updateTaskBoard(id, { tasks: [...data.tasks, { id: `task_${Date.now().toString(36)}`, title: "Nova tarefa", description: "", status: "ready", dependsOn: [], assignedAgentId: agents[0]?.id }] });
+  const plan = async () => {
+    const objective = data.objective.trim() || ((toFlowMap().nodes.find((node) => node.type === "input")?.input?.task) ?? "");
+    if (!project || !objective.trim()) return setMessage("Selecione um projeto e escreva um objetivo.");
+    setBusy(true); setMessage("");
+    try {
+      const result = await api.plan({ flow: toFlowMap(), projectPath: project.path, objective, tool: (agents[0]?.data as { agent?: AgentNodeData }).agent?.tool });
+      updateTaskBoard(id, { objective, tasks: result.tasks, generatedAt: new Date().toISOString() });
+    } catch (error: any) { setMessage(error.message); }
+    finally { setBusy(false); }
+  };
+  return (
+    <div className={cn(shell(!!selected, "idle"), "min-h-[420px] w-[560px] border-t-2 border-t-sand")}>
+      <div className="mb-3 flex items-center gap-2 text-[17px] font-bold"><ListTodo size={17} className="text-sand" /> plano de tarefas</div>
+      <textarea className="nodrag nowheel mb-2 min-h-20 w-full resize-none rounded-xl border border-line bg-ink p-3 text-sm text-text outline-none focus:border-sand" placeholder="objetivo que o orquestrador deve transformar em tarefas…" value={data.objective} onChange={(event) => updateTaskBoard(id, { objective: event.target.value })} />
+      <div className="mb-3 flex gap-2">
+        <button type="button" className="nodrag flex cursor-pointer items-center gap-1.5 rounded-lg border border-sand bg-sand/15 px-3 py-2 text-xs font-bold text-sand hover:bg-sand/25 disabled:cursor-wait disabled:opacity-60" onClick={plan} disabled={busy}><Sparkles size={13} /> {busy ? "planejando…" : "gerar tarefas"}</button>
+        <button type="button" className="nodrag flex cursor-pointer items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-xs text-text-dim hover:border-sand hover:text-text" onClick={addTask}><Plus size={13} /> tarefa manual</button>
+      </div>
+      {message && <p className="mb-2 text-xs text-blood">{message}</p>}
+      <div className="nowheel nodrag min-h-0 flex-1 space-y-2 overflow-auto rounded-xl border border-line bg-ink p-2">
+        {data.tasks.length === 0 && <p className="p-3 text-sm italic text-ph">As tarefas geradas aparecerão aqui.</p>}
+        {data.tasks.map((task, index) => (
+          <div key={task.id} className="rounded-lg border border-line bg-ink-2 p-2.5">
+            <div className="flex items-center gap-2"><span className={cn("h-2 w-2 rounded-full", (taskStatuses[task.id] ?? task.status) === "completed" ? "bg-leaf" : (taskStatuses[task.id] ?? task.status) === "running" ? "bg-sand animate-pulse" : (taskStatuses[task.id] ?? task.status) === "failed" ? "bg-blood" : (taskStatuses[task.id] ?? task.status) === "blocked" ? "bg-line-2" : "bg-sand-dim")} /><input className="nodrag min-w-0 flex-1 bg-transparent text-xs font-bold text-text outline-none" value={task.title} onChange={(event) => updateTask(task.id, { title: event.target.value })} /><span className="text-[10px] uppercase text-text-dim">{taskStatuses[task.id] ?? task.status}</span></div>
+            <textarea className="nodrag nowheel mt-1.5 h-12 w-full resize-none bg-transparent text-xs leading-relaxed text-text-dim outline-none" value={task.description} placeholder="descrição e critério de conclusão" onChange={(event) => updateTask(task.id, { description: event.target.value })} />
+            <div className="mt-1 flex items-center gap-2"><select className="nodrag min-w-0 flex-1 rounded border border-line bg-ink px-1.5 py-1 text-[10px] text-text-dim" value={task.assignedAgentId ?? ""} onChange={(event) => updateTask(task.id, { assignedAgentId: event.target.value || undefined })}><option value="">distribuir automaticamente</option>{agents.map((agent) => <option key={agent.id} value={agent.id}>{(agent.data.agent as AgentNodeData).role}</option>)}</select><select className="nodrag max-w-40 rounded border border-line bg-ink px-1.5 py-1 text-[10px] text-text-dim" value={task.dependsOn[0] ?? ""} onChange={(event) => updateTask(task.id, { dependsOn: event.target.value ? [event.target.value] : [] })}><option value="">sem dependência</option>{data.tasks.slice(0, index).map((previous) => <option key={previous.id} value={previous.id}>depois de: {previous.title}</option>)}</select></div>
+          </div>
+        ))}
+      </div>
+      <DeleteButton id={id} />
+      <Handle type="target" position={Position.Left} /><Handle type="source" position={Position.Right} />
     </div>
   );
 }

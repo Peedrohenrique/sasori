@@ -3,7 +3,7 @@ import { execFile } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import type { AgentPreset, SkillPreset, ToolAvailability, ToolId } from "@marionette/shared";
+import type { AgentPreset, SkillDocument, SkillPreset, ToolAvailability, ToolId } from "@marionette/shared";
 import { toolCommand } from "../agents/toolPath.js";
 
 // ─── Agentes pré-existentes + detecção das CLIs ─────────────────────────────
@@ -12,6 +12,7 @@ import { toolCommand } from "../agents/toolPath.js";
 // oferecer "selecionar agente" em vez de criar do zero.
 
 type PresetSource = AgentPreset["source"];
+const slugify = (value: string) => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 64) || "item";
 
 function parseAgentMd(raw: string, slug: string, source: PresetSource, dir: string): AgentPreset {
   let name = slug;
@@ -101,9 +102,13 @@ export async function agentsRoutes(app: FastifyInstance) {
   // E em qualquer pasta extra que o usuário escolher navegando pelo disco.
   app.post<{ Body: { projectPath?: string; extraDirs?: string[] } }>("/agents/presets", async (req) => {
     const { projectPath, extraDirs = [] } = req.body ?? {};
-    const lists = [await scanAgentsDir(path.join(os.homedir(), ".claude", "agents"), "user")];
+    const lists = [
+      await scanAgentsDir(path.join(os.homedir(), ".claude", "agents"), "user"),
+      await scanAgentsDir(path.join(os.homedir(), ".marionette", "agents"), "marionette"),
+    ];
     if (projectPath) {
       lists.push(await scanAgentsDir(path.join(projectPath, ".claude", "agents"), "project"));
+      lists.push(await scanAgentsDir(path.join(projectPath, ".marionette", "agents"), "project"));
     }
     for (const dir of extraDirs) {
       lists.push(await scanAgentsDir(path.resolve(dir), "custom"));
@@ -116,6 +121,32 @@ export async function agentsRoutes(app: FastifyInstance) {
       seen.add(key);
       return true;
     });
+  });
+
+  app.post<{ Body: { name: string; description?: string; prompt: string; scope: "global" | "project"; projectPath?: string } }>(
+    "/agents/presets/save",
+    async (req, reply) => {
+      const body = req.body;
+      if (!body?.name?.trim() || !body.prompt?.trim()) return reply.code(400).send({ error: "Nome e prompt são obrigatórios." });
+      if (body.scope === "project" && !body.projectPath) return reply.code(400).send({ error: "Selecione um projeto." });
+      const dir = body.scope === "project"
+        ? path.join(path.resolve(body.projectPath!), ".marionette", "agents")
+        : path.join(os.homedir(), ".marionette", "agents");
+      await fs.mkdir(dir, { recursive: true });
+      const slug = slugify(body.name);
+      const raw = `---\nname: ${body.name.trim()}\ndescription: ${(body.description ?? "").trim()}\n---\n\n${body.prompt.trim()}\n`;
+      await fs.writeFile(path.join(dir, `${slug}.md`), raw);
+      return parseAgentMd(raw, slug, body.scope === "project" ? "project" : "marionette", dir);
+    },
+  );
+
+  app.post<{ Body: { dir: string; slug: string; projectPath?: string } }>("/agents/presets/delete", async (req, reply) => {
+    const dir = path.resolve(req.body?.dir ?? "");
+    const allowed = [path.join(os.homedir(), ".marionette", "agents")];
+    if (req.body?.projectPath) allowed.push(path.join(path.resolve(req.body.projectPath), ".marionette", "agents"));
+    if (!allowed.some((root) => dir === path.resolve(root))) return reply.code(403).send({ error: "Apenas presets criados pelo Marionette podem ser removidos aqui." });
+    await fs.unlink(path.join(dir, `${slugify(req.body.slug)}.md`)).catch(() => {});
+    return { ok: true };
   });
 
   app.post<{ Body: { projectPath?: string } }>("/agents/skills", async (req) => {
@@ -137,6 +168,46 @@ export async function agentsRoutes(app: FastifyInstance) {
       seen.add(skill.id);
       return true;
     });
+  });
+
+  app.post<{ Body: { filePath: string } }>("/skills/read", async (req, reply) => {
+    const filePath = path.resolve(req.body?.filePath ?? "");
+    if (path.basename(filePath) !== "SKILL.md") return reply.code(400).send({ error: "Arquivo de skill inválido." });
+    try {
+      const content = await fs.readFile(filePath, "utf8");
+      return { filePath, content };
+    } catch {
+      return reply.code(404).send({ error: "Skill não encontrada." });
+    }
+  });
+
+  app.post<{ Body: { name: string; description?: string; content: string; scope: "global" | "project"; projectPath?: string } }>(
+    "/skills/save",
+    async (req, reply) => {
+      const body = req.body;
+      if (!body?.name?.trim() || !body.content?.trim()) return reply.code(400).send({ error: "Nome e conteúdo são obrigatórios." });
+      if (body.scope === "project" && !body.projectPath) return reply.code(400).send({ error: "Selecione um projeto." });
+      const source: SkillPreset["source"] = body.scope === "project" ? "project" : "marionette";
+      const dir = body.scope === "project"
+        ? path.join(path.resolve(body.projectPath!), ".marionette", "skills", slugify(body.name))
+        : path.join(os.homedir(), ".marionette", "skills", slugify(body.name));
+      await fs.mkdir(dir, { recursive: true });
+      const filePath = path.join(dir, "SKILL.md");
+      const content = `---\nname: ${body.name.trim()}\ndescription: ${(body.description ?? "").trim()}\n---\n\n${body.content.trim()}\n`;
+      await fs.writeFile(filePath, content);
+      const skill: SkillDocument = { id: `${source}:${filePath}`, name: body.name.trim(), description: body.description?.trim() || "Skill reutilizável", filePath, source, content };
+      return skill;
+    },
+  );
+
+  app.post<{ Body: { filePath: string; projectPath?: string } }>("/skills/delete", async (req, reply) => {
+    const filePath = path.resolve(req.body?.filePath ?? "");
+    const allowed = [path.join(os.homedir(), ".marionette", "skills")];
+    if (req.body?.projectPath) allowed.push(path.join(path.resolve(req.body.projectPath), ".marionette", "skills"));
+    if (!allowed.some((root) => filePath.startsWith(`${path.resolve(root)}${path.sep}`))) return reply.code(403).send({ error: "Apenas skills criadas pelo Marionette podem ser removidas aqui." });
+    await fs.unlink(filePath).catch(() => {});
+    await fs.rmdir(path.dirname(filePath)).catch(() => {});
+    return { ok: true };
   });
 
   app.get("/tools", async () => {

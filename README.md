@@ -33,6 +33,12 @@ SEU projeto, lendo/criando/editando arquivos e rodando comandos de verdade.
   `<projeto>/.claude/agents`, aponte QUALQUER pasta com `.md` de agentes e reuse os seus.
 - 🧩 **Skills reutilizáveis** — descubra `SKILL.md` globais ou do projeto, selecione quais
   acompanham cada agente e inclua seu conteúdo automaticamente na execução.
+- 🧠 **Planejamento em tarefas** — gere um plano estruturado, revise tarefas, defina dependências
+  e distribua automaticamente cada item ao agente mais adequado.
+- ⚡ **Paralelismo seguro** — tarefas independentes rodam em Git worktrees quando possível e
+  seus commits são integrados com controle de conflitos.
+- 📚 **Central de recursos** — gerencie skills, salve presets, aplique modelos e consulte o
+  histórico de cada projeto.
 - 🙋 **Tarefas de humano** — um bloco de anotações com checklist; o fluxo **pausa** ali até
   você concluir o que só um humano pode fazer (API key, aprovação…) e clicar em continuar.
 - 📡 **Status em tempo real** — cada nó pulsa com o marco atual via SSE:
@@ -80,6 +86,11 @@ Abra **http://localhost:3000** — o server sobe junto na porta **4001**.
    oferece **invocar um clone** (branch `marionette/<tarefa>`); ao final, **trazer de volta**
    (merge) ou **dispersar** (apagar), sempre com a sua confirmação. Pasta sem Git? Ele
    avisa e oferece `git init`.
+6. **🧠 Planejar antes de executar** — adicione o nó **tarefas**, escreva um objetivo ou use a
+   tarefa inicial e clique em **gerar tarefas**. Revise responsáveis e dependências antes de
+   executar.
+7. **📚 Abrir a biblioteca** — use **biblioteca** na barra superior para editar skills, salvar o
+   agente atual como preset, aplicar um modelo pronto ou restaurar/repetir uma execução.
 
 ## 🧩 Agentes, contexto e skills
 
@@ -105,11 +116,30 @@ As skills selecionadas ficam salvas no canvas do projeto e entram no contexto so
 agente que as recebeu. Para controlar o tamanho do prompt, cada execução carrega no máximo
 oito skills e até 12 mil caracteres por arquivo.
 
+## 🧠 Tarefas, dependências e paralelismo
+
+O nó de tarefas transforma um objetivo em itens com título, descrição, responsável e dependências.
+Os estados são `bloqueada`, `pronta`, `executando`, `concluída` e `falhou`. Agentes sem dependências
+entre si podem executar em paralelo. Em um repositório Git limpo, cada ramo paralelo recebe uma
+worktree temporária em `~/.marionette/worktrees/`; ao terminar, o Marionette cria um commit e
+integra os ramos na branch atual. Se o projeto não tiver Git ou tiver alterações locais, usa
+execução sequencial para evitar sobrescrever trabalho existente.
+
+## 📚 Histórico e modelos
+
+O botão **biblioteca** abre quatro áreas:
+
+- **Skills** — criar, visualizar, editar e remover skills gerenciadas pelo Marionette.
+- **Agentes** — salvar o agente atual como preset global ou específico do projeto.
+- **Modelos** — desenvolvimento completo, revisão de código e correção de bug.
+- **Histórico** — snapshots com logs, resumos, resultados, restauração do fluxo e repetição.
+
 ## 🧠 Os nós
 
 | Nó | Cor | O que faz |
 |---|---|---|
 | 🟢 tarefa inicial | verde | a missão que você escreve |
+| 🟤 plano de tarefas | areia escura | gera, distribui e acompanha tarefas com dependências |
 | 🔴 agente | vermelho | dispara Claude Code/Codex com papel + instrução + escopo |
 | 🟡 tarefas de humano | areia | checklist que **pausa** o fluxo até você continuar |
 | 🟠 resultado final | dourado | recebe a saída da última marionete |
@@ -124,8 +154,9 @@ flowchart LR
         Inspector["Instruções · contexto · skills"] --> Store
     end
     subgraph server ["⚙️ apps/server · :4001"]
-        API["Fastify"] --> Orq["Orquestrador<br/>(ordem topológica, sequencial)"]
+        API["Fastify"] --> Orq["Orquestrador<br/>(DAG, tarefas e paralelo seguro)"]
         API --> Library["Workspaces · agentes · skills"]
+        API --> Planner["Planejador · templates · histórico"]
         Orq --> RC["runClaudeCode"]
         Orq --> RX["runCodex"]
         API --> Git["git.ts · Kage Bunshin"]
@@ -168,10 +199,11 @@ por `--permission-mode acceptEdits` em [`runClaudeCode.ts`](apps/server/src/agen
 - **Nada acontece ao executar** — selecione a pasta do projeto e escreva a tarefa no nó verde.
 - **Fluxo com ciclo** — o Marionette recusa fios circulares; desfaça o laço.
 
-## 🗺 Roadmap (v2)
+## 🗺 Próximas evoluções
 
-- ⚡ Execução paralela de ramos independentes
-- 🏢 "Andares": cópia isolada do projeto por agente (adeus conflito de arquivo)
+- 🔐 Aprovação por tarefa antes de integrar worktrees
+- 🧪 Testes automatizados do agendador e resolução de conflitos
+- 🌐 Execução remota opcional para projetos maiores
 
 ---
 
