@@ -20,6 +20,9 @@ próprios — e conecta os nós com *fios de chakra* que definem a ordem. Ao exe
 agente dispara o **Claude Code** ou o **Codex** em modo não-interativo, direto na pasta do
 SEU projeto, lendo/criando/editando arquivos e rodando comandos de verdade.
 
+Para entender a direção do produto, as prioridades e as limitações conhecidas, consulte
+[`PROJECT_DIRECTION.md`](PROJECT_DIRECTION.md).
+
 ![Canvas do Marionette](docs/canvas.svg)
 
 ## ✨ O que ele faz

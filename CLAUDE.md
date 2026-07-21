@@ -14,6 +14,9 @@ npm run build      # build de produção
 
 Dev servers via `.claude/launch.json` (`marionette-web`, `marionette-server`).
 
+Antes de iniciar uma mudança de produto, leia `PROJECT_DIRECTION.md`: ele registra o estado
+atual, as prioridades, as limitações conhecidas e os invariantes que não devem regredir.
+
 ## Arquitetura
 
 - `packages/shared/src/index.ts` — ÚNICA fonte dos tipos (FlowMap, FlowNode, RunStatus,
