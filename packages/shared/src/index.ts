@@ -24,6 +24,12 @@ export interface AgentNodeData {
   tool: ToolId;
   /** Subpasta do projeto onde o agente pode mexer (vazio = projeto todo). */
   scope: string;
+  /** Contexto Markdown específico que acompanha este agente. */
+  contextMarkdown?: string;
+  /** Skills ou procedimentos adicionais, uma instrução por item. */
+  skills?: string[];
+  /** IDs de skills reutilizáveis descobertas no workspace. */
+  skillRefs?: string[];
   /** Slug do agente pré-existente selecionado (~/.claude/agents), se houver. */
   presetSlug?: string;
 }
@@ -77,6 +83,22 @@ export interface FlowMap {
   updatedAt: string;
 }
 
+/** Projeto aberto no Marionette: cada workspace guarda seu canvas e contexto. */
+export interface Workspace {
+  id: string;
+  name: string;
+  projectPath: string | null;
+  flowId: string;
+  icon?: string;
+  updatedAt: string;
+}
+
+export interface WorkspaceCreateRequest {
+  name?: string;
+  projectPath: string;
+  icon?: string;
+}
+
 // ─── Agentes pré-existentes (arquivos .md em .claude/agents) ────────────────
 
 export interface AgentPreset {
@@ -88,6 +110,14 @@ export interface AgentPreset {
   source: "user" | "project" | "custom";
   /** Pasta de origem (para exibir/agrupar fontes custom). */
   dir: string;
+}
+
+export interface SkillPreset {
+  id: string;
+  name: string;
+  description: string;
+  filePath: string;
+  source: "user" | "project" | "marionette";
 }
 
 // ─── Server API ─────────────────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import type { AgentRunner, RunnerEvent } from "./types.js";
+import { toolCommand } from "./toolPath.js";
 
 // ─── Runner: Codex CLI (modo não-interativo) ────────────────────────────────
 //
@@ -17,7 +18,7 @@ export const runCodex: AgentRunner = ({ systemPrompt, userPrompt, cwd, onEvent, 
     const args = ["exec", "--json", "--sandbox", "workspace-write", "--skip-git-repo-check", "-"];
 
     // MARIONETTE_CODEX_BIN: caminho custom do binário (útil se fora do PATH)
-    const child = spawn(process.env.MARIONETTE_CODEX_BIN || "codex", args, {
+    const child = spawn(toolCommand("codex"), args, {
       cwd,
       shell: process.platform === "win32",
       signal,

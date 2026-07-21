@@ -33,14 +33,14 @@ function StatusLight({ status }: { status: RunStatus }) {
           status === "idle" && "bg-line-2",
         )}
       />
-      <span className="text-[11px] text-sand-dim">{STATUS_LABELS[status]}</span>
+      <span className="text-xs text-sand-dim">{STATUS_LABELS[status]}</span>
     </span>
   );
 }
 
 function shell(selected: boolean, status: RunStatus) {
   return cn(
-    "w-[380px] rounded-2xl border border-line-2 bg-gradient-to-b from-ink-3 to-card-2 p-4 shadow-[0_10px_30px_var(--color-shadow)]",
+    "flex min-h-[440px] w-[620px] flex-col rounded-2xl border border-line-2 bg-gradient-to-b from-ink-3 to-card-2 p-5 shadow-[0_14px_38px_var(--color-shadow)]",
     selected && "border-sand shadow-[0_0_0_1px_var(--color-sand),0_12px_36px_var(--color-shadow)]",
     status === "done" && "border-leaf",
     status === "error" && "border-blood",
@@ -68,11 +68,11 @@ export function InputNode({ id, selected }: NodeProps) {
   const updateTask = useSasori((s) => s.updateTask);
   return (
     <div className={cn(shell(!!selected, "idle"), "border-t-2 border-t-leaf")}>
-      <div className="mb-2.5 flex items-center gap-2 text-[15px] font-bold">
+      <div className="mb-3 flex items-center gap-2 text-[17px] font-bold">
         <span className="h-2 w-2 rounded-full bg-leaf" /> tarefa inicial
       </div>
       <textarea
-        className="nodrag nowheel h-48 w-full resize-none overflow-auto rounded-xl border border-line bg-ink p-3.5 text-sm leading-relaxed text-text outline-none placeholder:text-ph focus:border-sand"
+        className="nodrag nowheel min-h-[350px] w-full flex-1 resize-none overflow-auto rounded-xl border border-line bg-ink p-4 text-base leading-7 text-text outline-none placeholder:text-ph focus:border-sand"
         placeholder="o que as marionetes devem fazer?"
         value={task}
         onChange={(e) => updateTask(id, e.target.value)}
@@ -88,14 +88,14 @@ function LivePlan({ nodeId }: { nodeId: string }) {
   if (!items?.length) return null;
   const done = items.filter((t) => t.status === "completed").length;
   return (
-    <div className="mt-3 rounded-xl border border-line bg-ink p-2.5">
-      <div className="mb-1.5 flex items-center gap-1.5 px-1 text-[11px] font-bold uppercase tracking-wider text-sand">
-        <ListTodo size={13} /> plano da marionete
+    <div className="mt-3 rounded-xl border border-line bg-ink p-3">
+      <div className="mb-2 flex items-center gap-1.5 px-1 text-xs font-bold uppercase tracking-wider text-sand">
+        <ListTodo size={14} /> plano da marionete
         <span className="ml-auto font-semibold text-sand-dim">
           {done}/{items.length}
         </span>
       </div>
-      <div className="nowheel nodrag max-h-44 overflow-auto">
+      <div className="nowheel nodrag max-h-48 overflow-auto">
         {items.map((t, i) => (
           <div key={i} className="flex items-start gap-2 px-1 py-1">
             {t.status === "completed" ? (
@@ -111,7 +111,7 @@ function LivePlan({ nodeId }: { nodeId: string }) {
             )}
             <span
               className={cn(
-                "text-[13px] leading-snug",
+                "text-sm leading-snug",
                 t.status === "completed" && "text-ph line-through",
                 t.status === "in_progress" && "font-semibold text-sand-bright",
                 t.status === "pending" && "text-text-dim",
@@ -131,22 +131,22 @@ export function AgentNode({ id, data, selected }: NodeProps) {
   const status = useSasori((s) => s.statuses[id] ?? "idle");
   return (
     <div className={cn(shell(!!selected, status), "border-t-2 border-t-blood")}>
-      <div className="flex items-center gap-2 text-[15px] font-bold">
+      <div className="flex items-center gap-2 text-[17px] font-bold">
         <span className="h-2 w-2 rounded-full bg-sand" />
         <span className="truncate">{agent.role}</span>
         <StatusLight status={status} />
       </div>
       <div className="mt-2 flex items-center gap-1.5">
-        <span className="rounded-md bg-ink px-2 py-0.5 text-[11px] font-semibold text-sand-dim">
+        <span className="rounded-md bg-ink px-2.5 py-1 text-xs font-semibold text-sand-dim">
           {agent.tool === "claude-code" ? "Claude Code" : "Codex"}
         </span>
         {agent.scope && (
-          <span className="truncate rounded-md bg-ink px-2 py-0.5 text-[11px] text-sand-dim">
+          <span className="truncate rounded-md bg-ink px-2.5 py-1 text-xs text-sand-dim">
             {agent.scope}
           </span>
         )}
       </div>
-      <div className="nowheel nodrag mt-2.5 max-h-32 min-h-[3.4rem] overflow-auto text-[13px] leading-relaxed text-text-dim">
+      <div className="nowheel nodrag mt-3 min-h-[305px] flex-1 overflow-auto rounded-xl border border-line bg-ink p-4 text-[15px] leading-6 text-text-dim">
         {agent.prompt || <span className="italic text-ph">sem instrução — clique para editar</span>}
       </div>
       <LivePlan nodeId={id} />
@@ -186,19 +186,19 @@ export function HumanNode({ id, selected }: NodeProps) {
 
   return (
     <div className={cn(shell(!!selected, status), "border-t-2 border-t-sand-bright")}>
-      <div className="mb-2.5 flex items-center gap-2 text-[15px] font-bold">
-        <UserRound size={15} className="text-sand-bright" /> tarefas de humano
+      <div className="mb-3 flex items-center gap-2 text-[17px] font-bold">
+        <UserRound size={17} className="text-sand-bright" /> tarefas de humano
         <StatusLight status={status} />
       </div>
 
       {/* bloco de anotações pautado */}
-      <div className="rounded-xl border border-line bg-ink p-1.5 [background-image:repeating-linear-gradient(transparent,transparent_35px,var(--color-rule)_35px,var(--color-rule)_36px)]">
+      <div className="flex min-h-[345px] flex-1 flex-col rounded-xl border border-line bg-ink p-1.5 [background-image:repeating-linear-gradient(transparent,transparent_35px,var(--color-rule)_35px,var(--color-rule)_36px)]">
         {items.length === 0 && (
-          <p className="px-2.5 py-3 text-[13px] italic text-ph">
+          <p className="px-3 py-3 text-[15px] italic leading-6 text-ph">
             liste aqui o que só um humano pode fazer (criar conta, pegar API key, aprovar algo…)
           </p>
         )}
-        <div className="nowheel nodrag max-h-52 overflow-auto">
+        <div className="nowheel nodrag min-h-0 flex-1 overflow-auto">
           {items.map((t) => (
             <div key={t.id} className="group flex h-9 items-center gap-2.5 px-2">
               <button
@@ -212,7 +212,7 @@ export function HumanNode({ id, selected }: NodeProps) {
               </button>
               <span
                 className={cn(
-                  "flex-1 truncate text-[13px]",
+                  "flex-1 truncate text-[15px]",
                   t.done ? "text-ph line-through" : "text-text",
                 )}
               >
@@ -230,7 +230,7 @@ export function HumanNode({ id, selected }: NodeProps) {
         <div className="flex h-9 items-center gap-2.5 px-2">
           <Plus size={14} className="shrink-0 text-sand-dim" />
           <input
-            className="nodrag w-full bg-transparent text-[13px] text-text outline-none placeholder:text-ph"
+            className="nodrag w-full bg-transparent text-[15px] text-text outline-none placeholder:text-ph"
             placeholder="adicionar tarefa…"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -242,7 +242,7 @@ export function HumanNode({ id, selected }: NodeProps) {
       {waiting && (
         <button
           className={cn(
-            "mt-3 w-full cursor-pointer rounded-xl border px-3 py-2.5 text-[13px] font-bold transition-colors",
+            "mt-3 w-full cursor-pointer rounded-xl border px-3 py-2.5 text-sm font-bold transition-colors",
             allDone
               ? "border-leaf bg-leaf/15 text-leaf hover:bg-leaf/25"
               : "border-sand bg-sand/10 text-sand hover:bg-sand/20",
@@ -266,11 +266,11 @@ export function OutputNode({ id, selected }: NodeProps) {
   const runError = useSasori((s) => s.runError);
   return (
     <div className={cn(shell(!!selected, status), "border-t-2 border-t-sand")}>
-      <div className="mb-2.5 flex items-center gap-2 text-[15px] font-bold">
+      <div className="mb-3 flex items-center gap-2 text-[17px] font-bold">
         <span className="h-2 w-2 rounded-full bg-sand" /> resultado final
         <StatusLight status={status} />
       </div>
-      <div className="nowheel nodrag h-48 overflow-auto whitespace-pre-wrap rounded-xl border border-line bg-ink p-3.5 text-[13px] leading-relaxed">
+      <div className="nowheel nodrag min-h-[350px] flex-1 overflow-auto whitespace-pre-wrap rounded-xl border border-line bg-ink p-4 text-[15px] leading-6">
         {runError ? (
           <span className="text-blood">{runError}</span>
         ) : finalOutput ? (

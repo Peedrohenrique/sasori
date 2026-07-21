@@ -10,7 +10,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-gradient-to-b from-blood to-blood-dark text-sand-bright border border-[#c23] shadow-[0_0_14px_rgba(165,34,34,.4)] hover:from-[#b52828]",
+          "bg-gradient-to-b from-blood to-blood-dark text-white border border-[#c23] shadow-[0_0_14px_rgba(165,34,34,.4)] hover:from-[#b52828]",
         ghost: "bg-transparent text-text-dim border border-line-2 hover:bg-ink-3 hover:text-text",
         sand: "bg-sand text-ink border border-sand hover:bg-sand-bright",
         subtle: "bg-ink-3 text-text-dim border border-line hover:text-text",

@@ -1,12 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FolderOpen, GitBranch, Moon, Play, Plus, Square, Sun, UserRound } from "lucide-react";
+import {
+  FolderOpen,
+  GitBranch,
+  Moon,
+  Play,
+  Plus,
+  Square,
+  Sun,
+  UserRound,
+  Workflow,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { api } from "@/lib/api";
-import { refreshPresets, useSasori } from "@/lib/store";
-import { FolderPicker } from "./FolderPicker";
+import { useSasori } from "@/lib/store";
 
 // ─── Barra superior: projeto · agentes · clone (git) · tema · executar ──────
 
@@ -47,27 +56,12 @@ export function TopBar() {
   const setProject = useSasori((s) => s.setProject);
   const setClone = useSasori((s) => s.setClone);
 
-  const [pickerOpen, setPickerOpen] = useState(false);
   const [preRunOpen, setPreRunOpen] = useState(false);
   const [postRunOpen, setPostRunOpen] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const task = (nodes.find((n) => n.type === "input-node")?.data.task as string) ?? "";
-
-  // valida e define a pasta-alvo do projeto
-  const pickProject = async (path: string) => {
-    try {
-      const info = await api.validateProject(path);
-      if (!info.exists) return `Pasta não existe: ${info.path}`;
-      setProject(info);
-      setClone(null);
-      refreshPresets();
-      return null;
-    } catch (e: any) {
-      return e.message as string;
-    }
-  };
 
   const flash = (m: string) => {
     setMsg(m);
@@ -150,8 +144,8 @@ export function TopBar() {
   return (
     <header className="z-10 flex items-center justify-between border-b border-line bg-gradient-to-b from-ink-2 to-ink px-5 py-3">
       <div className="flex items-center gap-3">
-        <div className="grid h-10 w-10 place-items-center rounded-xl bg-[radial-gradient(circle_at_30%_30%,#8a1c1c,#4a0f0f)] text-xl text-sand-bright shadow-[0_0_18px_rgba(138,28,28,.5)]">
-          糸
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-[radial-gradient(circle_at_30%_30%,#a52222,#651010)] text-white shadow-[0_0_18px_rgba(138,28,28,.5)]">
+          <Workflow size={21} strokeWidth={2.2} aria-hidden="true" />
         </div>
         <div>
           <div className="text-lg font-extrabold tracking-[4px]">MARIONETTE</div>
@@ -162,10 +156,10 @@ export function TopBar() {
       <div className="flex items-center gap-2.5">
         {msg && <span className="max-w-72 truncate text-xs text-sand">{msg}</span>}
 
-        <Button variant="ghost" size="sm" onClick={() => setPickerOpen(true)}>
+        <div className="flex max-w-64 items-center gap-1.5 rounded-md border border-line px-2.5 py-1.5 text-xs text-sand-dim">
           <FolderOpen size={13} />
-          {project ? project.path.split(/[/\\]/).pop() : "Selecionar pasta do projeto"}
-        </Button>
+          <span className="truncate">{project ? project.path.split(/[/\\]/).pop() : "nenhum projeto"}</span>
+        </div>
 
         {project && (
           <span className="flex items-center gap-1 rounded-md border border-line px-2 py-1 text-[10px] text-sand-dim">
@@ -200,13 +194,6 @@ export function TopBar() {
           </Button>
         )}
       </div>
-
-      <FolderPicker
-        open={pickerOpen}
-        onClose={() => setPickerOpen(false)}
-        title="Selecionar pasta do projeto"
-        onPick={pickProject}
-      />
 
       {/* pré-execução: rede de segurança Git */}
       <Dialog open={preRunOpen} onClose={() => setPreRunOpen(false)} title="Kage Bunshin no Jutsu">

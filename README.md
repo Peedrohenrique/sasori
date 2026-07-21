@@ -25,10 +25,14 @@ SEU projeto, lendo/criando/editando arquivos e rodando comandos de verdade.
 ## ✨ O que ele faz
 
 - 🎨 **Canvas visual** — arraste nós, puxe fios, zoom e minimapa (React Flow).
+- 🗂 **Vários projetos** — barra lateral recolhível para adicionar projetos e alternar
+  instantaneamente entre o canvas e os agentes de cada workspace.
 - 🎭 **Agentes 100% editáveis** — papel, instrução (system prompt), ferramenta
-  (Claude Code / Codex) e escopo (subpasta permitida) por agente.
+  (Claude Code / Codex), escopo, contexto Markdown e procedimentos por agente.
 - 📦 **Agentes prontos de qualquer pasta** — além de `~/.claude/agents` e
   `<projeto>/.claude/agents`, aponte QUALQUER pasta com `.md` de agentes e reuse os seus.
+- 🧩 **Skills reutilizáveis** — descubra `SKILL.md` globais ou do projeto, selecione quais
+  acompanham cada agente e inclua seu conteúdo automaticamente na execução.
 - 🙋 **Tarefas de humano** — um bloco de anotações com checklist; o fluxo **pausa** ali até
   você concluir o que só um humano pode fazer (API key, aprovação…) e clicar em continuar.
 - 📡 **Status em tempo real** — cada nó pulsa com o marco atual via SSE:
@@ -36,7 +40,7 @@ SEU projeto, lendo/criando/editando arquivos e rodando comandos de verdade.
 - 🗣 **Painel "Ombro"** — resumo curto do que cada agente fez + próximo passo sugerido.
 - 🌪 **Kage Bunshin (rede de segurança Git)** — os agentes trabalham numa branch clone;
   você decide se traz de volta (merge) ou dispersa (apaga). Nada acontece sem confirmação.
-- 💾 **Sem banco** — canvases salvos em JSON local (`~/.marionette/flows/`), com autosave.
+- 💾 **Sem banco** — workspaces e canvases salvos em JSON local (`~/.marionette/`), com autosave.
 - 🌗 **Dark & light** — tema Suna de noite ou de dia, com um clique (sol/lua na barra).
 
 ## 🚀 Começando
@@ -45,11 +49,12 @@ SEU projeto, lendo/criando/editando arquivos e rodando comandos de verdade.
 |---|---|
 | [Node.js](https://nodejs.org) ≥ 20 | rodar front e server |
 | [Git](https://git-scm.com) | rede de segurança (branches) |
-| [Claude Code](https://claude.com/claude-code) logado (`claude` no PATH) | ferramenta de agente |
-| [Codex](https://openai.com/codex) logado (`codex` no PATH) | ferramenta de agente |
+| [Claude Code](https://claude.com/claude-code) instalado e logado | ferramenta de agente |
+| [Codex](https://openai.com/codex) instalado e logado | ferramenta de agente |
 
-> Basta **uma** das duas CLIs — a UI mostra o que detectou. Binário fora do PATH?
-> Use `MARIONETTE_CLAUDE_BIN` / `MARIONETTE_CODEX_BIN`.
+> Basta **uma** das duas CLIs — a UI mostra o que detectou. O Marionette procura no `PATH` e
+> nos locais comuns de instalação. Para um caminho incomum, use
+> `MARIONETTE_CLAUDE_BIN` / `MARIONETTE_CODEX_BIN`.
 
 ```bash
 git clone <este-repo> && cd sasori
@@ -61,11 +66,13 @@ Abra **http://localhost:3000** — o server sobe junto na porta **4001**.
 
 ## 🎮 Como usar
 
-1. **📁 Selecionar pasta do projeto** — navegue pelo disco ou cole o caminho absoluto
-   (`/Users/voce/meu-app` ou `C:\Users\voce\meu-app`).
+1. **📁 Adicione um projeto** — use o botão de pasta na barra lateral, navegue pelo disco ou
+   cole o caminho absoluto (`/Users/voce/meu-app` ou `C:\Users\voce\meu-app`). Cada projeto
+   mantém seu próprio canvas. Clique em outro projeto para trocar rapidamente; a lixeira só
+   remove o atalho do Marionette, nunca os arquivos do projeto.
 2. **🎭 Monte as marionetes** — `+ agente` cria um nó; clique nele para abrir o inspetor e
-   editar tudo. Ou selecione um **agente pronto** (o botão *"buscar agentes em outra
-   pasta…"* deixa você apontar onde estão os seus).
+   editar instruções, contexto e skills. Ou selecione um **agente pronto** (o botão
+   *"buscar agentes em outra pasta…"* deixa você apontar onde estão os seus).
 3. **🙋 Tarefas de humano** — `+ humano` adiciona o bloco de checklist onde o fluxo pausa.
 4. **🕸 Conecte os fios** — bolinha direita de um nó → nó seguinte. Execução sequencial,
    a saída de cada agente vira contexto do próximo.
@@ -73,6 +80,30 @@ Abra **http://localhost:3000** — o server sobe junto na porta **4001**.
    oferece **invocar um clone** (branch `marionette/<tarefa>`); ao final, **trazer de volta**
    (merge) ou **dispersar** (apagar), sempre com a sua confirmação. Pasta sem Git? Ele
    avisa e oferece `git init`.
+
+## 🧩 Agentes, contexto e skills
+
+Cada agente possui três áreas no inspetor:
+
+- **Instruções** — nome/papel, prompt principal, Claude Code ou Codex e subpasta permitida.
+- **Contexto** — Markdown com requisitos, decisões e arquivos importantes daquele agente.
+- **Skills** — procedimentos curtos escritos no próprio agente e skills reutilizáveis marcadas
+  na biblioteca do workspace.
+
+O Marionette procura arquivos no formato `<pasta-da-skill>/SKILL.md` nestas fontes:
+
+```text
+~/.marionette/skills/       globais do Marionette
+~/.claude/skills/           globais do Claude
+~/.codex/skills/            globais do Codex
+<projeto>/.marionette/skills/
+<projeto>/.claude/skills/
+<projeto>/.codex/skills/
+```
+
+As skills selecionadas ficam salvas no canvas do projeto e entram no contexto somente do
+agente que as recebeu. Para controlar o tamanho do prompt, cada execução carrega no máximo
+oito skills e até 12 mil caracteres por arquivo.
 
 ## 🧠 Os nós
 
@@ -88,10 +119,13 @@ Abra **http://localhost:3000** — o server sobe junto na porta **4001**.
 ```mermaid
 flowchart LR
     subgraph web ["🖥 apps/web · :3000"]
-        Canvas["Canvas React Flow"] --> Store["Zustand"]
+        Sidebar["Projetos / workspaces"] --> Store["Zustand"]
+        Canvas["Canvas React Flow"] --> Store
+        Inspector["Instruções · contexto · skills"] --> Store
     end
     subgraph server ["⚙️ apps/server · :4001"]
         API["Fastify"] --> Orq["Orquestrador<br/>(ordem topológica, sequencial)"]
+        API --> Library["Workspaces · agentes · skills"]
         Orq --> RC["runClaudeCode"]
         Orq --> RX["runCodex"]
         API --> Git["git.ts · Kage Bunshin"]
@@ -128,7 +162,9 @@ por `--permission-mode acceptEdits` em [`runClaudeCode.ts`](apps/server/src/agen
 ## 🔧 Problemas comuns
 
 - **"CLI não detectada"** — confira `claude --version` / `codex --version` no seu terminal;
-  se funcionam mas o Marionette não vê, o PATH do processo difere: use as variáveis acima.
+  reinicie o servidor para refazer a detecção. O Marionette procura automaticamente em
+  `~/.local/bin`, `~/.npm-global/bin`, Homebrew e `/usr/local/bin`; para outro local, use as
+  variáveis acima.
 - **Nada acontece ao executar** — selecione a pasta do projeto e escreva a tarefa no nó verde.
 - **Fluxo com ciclo** — o Marionette recusa fios circulares; desfaça o laço.
 

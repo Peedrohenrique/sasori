@@ -21,12 +21,14 @@ export function Inspector() {
   const selectedId = useSasori((s) => s.selectedId);
   const node = useSasori((s) => s.nodes.find((n) => n.id === s.selectedId));
   const presets = useSasori((s) => s.presets);
+  const skillLibrary = useSasori((s) => s.skillLibrary);
   const tools = useSasori((s) => s.tools);
   const agentDirs = useSasori((s) => s.agentDirs);
   const updateAgent = useSasori((s) => s.updateAgent);
   const addAgentDir = useSasori((s) => s.addAgentDir);
   const removeAgentDir = useSasori((s) => s.removeAgentDir);
   const [dirPickerOpen, setDirPickerOpen] = useState(false);
+  const [tab, setTab] = useState<"instructions" | "context" | "skills">("instructions");
 
   if (!selectedId || !node || node.type !== "agent-node") return null;
   const agent = node.data.agent as AgentNodeData;
@@ -105,38 +107,134 @@ export function Inspector() {
         </p>
       )}
 
-      <Label>papel / nome</Label>
-      <Input value={agent.role} onChange={(e) => updateAgent(selectedId, { role: e.target.value })} />
+      <div className="mt-3 grid grid-cols-3 gap-1 rounded-lg border border-line bg-ink p-1">
+        {([
+          ["instructions", "instruções"],
+          ["context", "contexto"],
+          ["skills", "skills"],
+        ] as const).map(([value, label]) => (
+          <button
+            key={value}
+            className={`cursor-pointer rounded-md px-1.5 py-1.5 text-[10px] font-bold uppercase tracking-wide transition-colors ${
+              tab === value ? "bg-sand text-ink" : "text-text-dim hover:bg-ink-3 hover:text-text"
+            }`}
+            onClick={() => setTab(value)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
-      <Label>instrução (system prompt)</Label>
-      <Textarea
-        className="h-28 text-xs"
-        value={agent.prompt}
-        onChange={(e) => updateAgent(selectedId, { prompt: e.target.value })}
-      />
+      {tab === "instructions" && (
+        <>
+          <Label>papel / nome</Label>
+          <Input value={agent.role} onChange={(e) => updateAgent(selectedId, { role: e.target.value })} />
 
-      <Label>ferramenta</Label>
-      <Select
-        value={agent.tool}
-        onChange={(e) => updateAgent(selectedId, { tool: e.target.value as AgentNodeData["tool"] })}
-      >
-        <option value="claude-code">
-          Claude Code{toolInfo("claude-code")?.available ? "" : " (não detectado)"}
-        </option>
-        <option value="codex">{`Codex${toolInfo("codex")?.available ? "" : " (não detectado)"}`}</option>
-      </Select>
-      {toolInfo(agent.tool) && !toolInfo(agent.tool)!.available && (
-        <p className="mt-1 text-[10px] text-blood">
-          ⚠ CLI não detectada no PATH — instale antes de executar
-        </p>
+          <Label>instrução principal</Label>
+          <Textarea
+            className="h-32 text-xs"
+            value={agent.prompt}
+            onChange={(e) => updateAgent(selectedId, { prompt: e.target.value })}
+          />
+
+          <Label>ferramenta</Label>
+          <Select
+            value={agent.tool}
+            onChange={(e) => updateAgent(selectedId, { tool: e.target.value as AgentNodeData["tool"] })}
+          >
+            <option value="claude-code">
+              Claude Code{toolInfo("claude-code")?.available ? "" : " (não detectado)"}
+            </option>
+            <option value="codex">{`Codex${toolInfo("codex")?.available ? "" : " (não detectado)"}`}</option>
+          </Select>
+          {toolInfo(agent.tool) && !toolInfo(agent.tool)!.available && (
+            <p className="mt-1 text-[10px] text-blood">⚠ CLI não detectada no PATH — instale antes de executar</p>
+          )}
+
+          <Label>escopo (subpasta permitida)</Label>
+          <Input
+            placeholder="ex.: apps/web (vazio = projeto todo)"
+            value={agent.scope}
+            onChange={(e) => updateAgent(selectedId, { scope: e.target.value })}
+          />
+        </>
       )}
 
-      <Label>escopo (subpasta permitida)</Label>
-      <Input
-        placeholder="ex.: apps/web (vazio = projeto todo)"
-        value={agent.scope}
-        onChange={(e) => updateAgent(selectedId, { scope: e.target.value })}
-      />
+      {tab === "context" && (
+        <>
+          <Label>contexto Markdown</Label>
+          <Textarea
+            className="h-64 text-xs leading-relaxed"
+            placeholder="# Contexto deste agente\n\nRequisitos, decisões, arquivos importantes ou regras específicas…"
+            value={agent.contextMarkdown ?? ""}
+            onChange={(e) => updateAgent(selectedId, { contextMarkdown: e.target.value })}
+          />
+          <p className="mt-1 text-[10px] leading-relaxed text-text-dim">
+            Este conteúdo acompanha o agente sem alterar o prompt principal.
+          </p>
+        </>
+      )}
+
+      {tab === "skills" && (
+        <>
+          <Label>skills reutilizáveis</Label>
+          {skillLibrary.length > 0 ? (
+            <div className="mb-3 max-h-44 space-y-1 overflow-y-auto rounded-lg border border-line bg-ink p-1.5">
+              {skillLibrary.map((skill) => {
+                const selected = (agent.skillRefs ?? []).includes(skill.id);
+                return (
+                  <button
+                    key={skill.id}
+                    type="button"
+                    className={`flex w-full cursor-pointer items-start gap-2 rounded-md px-2 py-1.5 text-left transition-colors ${
+                      selected ? "bg-sand/15 text-text" : "text-text-dim hover:bg-ink-3 hover:text-text"
+                    }`}
+                    onClick={() => {
+                      const refs = agent.skillRefs ?? [];
+                      updateAgent(selectedId, {
+                        skillRefs: selected ? refs.filter((id) => id !== skill.id) : [...refs, skill.id],
+                      });
+                    }}
+                  >
+                    <span
+                      className={`mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border text-[9px] ${
+                        selected ? "border-sand bg-sand text-ink" : "border-line"
+                      }`}
+                    >
+                      {selected ? "✓" : ""}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-[11px] font-semibold">{skill.name}</span>
+                      <span className="block truncate text-[9px] text-text-dim">
+                        {skill.source === "project" ? "do projeto" : "global"} · {skill.description}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="mb-3 rounded-lg border border-dashed border-line px-2 py-2 text-[10px] leading-relaxed text-text-dim">
+              Nenhuma SKILL.md encontrada. Adicione uma em .codex/skills/&lt;nome&gt;/SKILL.md ou .claude/skills/.
+            </p>
+          )}
+
+          <Label>procedimentos locais (opcional)</Label>
+          <Textarea
+            className="h-64 text-xs leading-relaxed"
+            placeholder="Uma instrução por linha…\nEx.: revisar segurança antes de concluir\nEx.: sempre criar testes para novas funções"
+            value={(agent.skills ?? []).join("\n")}
+            onChange={(e) =>
+              updateAgent(selectedId, {
+                skills: e.target.value.split("\n").map((skill) => skill.trim()).filter(Boolean),
+              })
+            }
+          />
+          <p className="mt-1 text-[10px] leading-relaxed text-text-dim">
+            As skills selecionadas entram automaticamente no contexto deste agente durante a execução.
+          </p>
+        </>
+      )}
 
       <FolderPicker
         open={dirPickerOpen}

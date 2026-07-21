@@ -6,6 +6,7 @@ import { agentsRoutes } from "./routes/agents.js";
 import { flowsRoutes } from "./routes/flows.js";
 import { gitRoutes } from "./routes/git.js";
 import { runRoutes } from "./routes/run.js";
+import { workspacesRoutes } from "./routes/workspaces.js";
 
 // ─── Marionette server · dispara Claude Code / Codex e transmite status via SSE
 
@@ -16,6 +17,7 @@ await app.register(cors, { origin: true });
 await app.register(fsRoutes);
 await app.register(agentsRoutes);
 await app.register(flowsRoutes);
+await app.register(workspacesRoutes);
 await app.register(gitRoutes);
 await app.register(runRoutes);
 

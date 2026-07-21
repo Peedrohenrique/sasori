@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import fs from "node:fs/promises";
 import path from "node:path";
 import type { FlowMap, FlowNode, RunStatus } from "@marionette/shared";
 import { RUNNERS } from "./agents/index.js";
@@ -60,6 +61,23 @@ function extractSummary(output: string): string {
   const m = output.match(/RESUMO:\s*([\s\S]{1,600})/i);
   if (m) return m[1].trim();
   return output.slice(-400).trim() || "(sem resumo)";
+}
+
+async function readSelectedSkills(paths?: string[]): Promise<string> {
+  const selected = (paths ?? []).slice(0, 8);
+  const contents = await Promise.all(
+    selected.map(async (filePath) => {
+      try {
+        return (await fs.readFile(filePath, "utf8")).slice(0, 12000).trim();
+      } catch {
+        return "";
+      }
+    }),
+  );
+  return contents
+    .filter(Boolean)
+    .map((content, index) => `\n\n### Skill reutilizável ${index + 1}\n${content}`)
+    .join("");
 }
 
 export async function runFlow(flow: FlowMap, projectPath: string): Promise<{ runId: string }> {
@@ -136,7 +154,17 @@ export async function runFlow(flow: FlowMap, projectPath: string): Promise<{ run
           ? `\nVocê SÓ pode criar/editar/apagar arquivos dentro de "${agent.scope}" (relativo à raiz do projeto: ${path.normalize(agent.scope)}). Pode LER o resto do projeto para contexto.`
           : "";
 
-        const systemPrompt = `Você é o agente "${agent.role}" de um fluxo orquestrado (Marionette).\n${agent.prompt}${scopeNote}`;
+        const contextNote = agent.contextMarkdown?.trim()
+          ? `\n\n## Contexto Markdown do agente\n${agent.contextMarkdown.trim()}`
+          : "";
+        const skillsNote = agent.skills?.filter((skill) => skill.trim()).length
+          ? `\n\n## Skills e procedimentos adicionais\n${agent.skills.filter((skill) => skill.trim()).map((skill) => `- ${skill.trim()}`).join("\n")}`
+          : "";
+        const selectedSkills = await readSelectedSkills(agent.skillRefs);
+        const selectedSkillsNote = selectedSkills
+          ? `\n\n## SKILL.md selecionadas para este agente${selectedSkills}`
+          : "";
+        const systemPrompt = `Você é o agente "${agent.role}" de um fluxo orquestrado (Marionette).\n${agent.prompt}${scopeNote}${contextNote}${skillsNote}${selectedSkillsNote}`;
 
         const userPrompt =
           (upstream

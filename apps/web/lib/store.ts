@@ -19,8 +19,10 @@ import type {
   ProjectInfo,
   RunStatus,
   SasoriEvent,
+  SkillPreset,
   TodoItem,
   ToolAvailability,
+  Workspace,
 } from "@marionette/shared";
 import { api } from "./api";
 
@@ -53,10 +55,10 @@ const START_NODES: RFNode[] = [
   {
     id: "start-agent",
     type: "agent-node",
-    position: { x: 420, y: 180 },
+    position: { x: 740, y: 180 },
     data: { agent: { ...DEFAULT_AGENT } },
   },
-  { id: "start-output", type: "output-node", position: { x: 800, y: 220 }, data: {} },
+  { id: "start-output", type: "output-node", position: { x: 1420, y: 220 }, data: {} },
 ];
 
 const START_EDGES: Edge[] = [
@@ -64,12 +66,25 @@ const START_EDGES: Edge[] = [
   { id: "e2", source: "start-agent", target: "start-output" },
 ];
 
+// Reposiciona apenas o fluxo inicial legado; layouts que o usuário já organizou
+// manualmente continuam exatamente onde foram salvos.
+const upgradedStarterPosition = (id: string, position: { x: number; y: number }) => {
+  if (id === "start-agent" && [420, 660].includes(position.x) && position.y === 180)
+    return { x: 740, y: 180 };
+  if (id === "start-output" && [800, 1260].includes(position.x) && position.y === 220)
+    return { x: 1420, y: 220 };
+  return position;
+};
+
 interface SasoriState {
+  workspaces: Workspace[];
+  activeWorkspaceId: string | null;
   nodes: RFNode[];
   edges: Edge[];
   project: ProjectInfo | null;
   tools: ToolAvailability[];
   presets: AgentPreset[];
+  skillLibrary: SkillPreset[];
   selectedId: string | null;
   /** Pastas extras escolhidas pelo usuário onde buscar agentes prontos. */
   agentDirs: string[];
@@ -95,8 +110,11 @@ interface SasoriState {
   updateHumanItems: (id: string, items: HumanTask[]) => void;
   select: (id: string | null) => void;
   setProject: (p: ProjectInfo | null) => void;
+  setWorkspaces: (workspaces: Workspace[]) => void;
+  setActiveWorkspaceId: (id: string | null) => void;
   setTools: (t: ToolAvailability[]) => void;
   setPresets: (p: AgentPreset[]) => void;
+  setSkillLibrary: (skills: SkillPreset[]) => void;
   setClone: (c: CloneInfo | null) => void;
   setRunning: (r: boolean) => void;
   applyEvent: (ev: SasoriEvent) => void;
@@ -105,11 +123,14 @@ interface SasoriState {
 }
 
 export const useSasori = create<SasoriState>((set, get) => ({
+  workspaces: [],
+  activeWorkspaceId: null,
   nodes: START_NODES,
   edges: START_EDGES,
   project: null,
   tools: [],
   presets: [],
+  skillLibrary: [],
   selectedId: null,
   agentDirs: [],
   statuses: {},
@@ -197,8 +218,11 @@ export const useSasori = create<SasoriState>((set, get) => ({
 
   select: (id) => set({ selectedId: id }),
   setProject: (project) => set({ project }),
+  setWorkspaces: (workspaces) => set({ workspaces }),
+  setActiveWorkspaceId: (activeWorkspaceId) => set({ activeWorkspaceId }),
   setTools: (tools) => set({ tools }),
   setPresets: (presets) => set({ presets }),
+  setSkillLibrary: (skillLibrary) => set({ skillLibrary }),
   setClone: (clone) => set({ clone }),
   setRunning: (running) => set({ running }),
 
@@ -225,15 +249,16 @@ export const useSasori = create<SasoriState>((set, get) => ({
   },
 
   toFlowMap: () => {
-    const { nodes, edges, project, agentDirs } = get();
+    const { nodes, edges, project, agentDirs, activeWorkspaceId, workspaces } = get();
+    const workspace = workspaces.find((item) => item.id === activeWorkspaceId);
     const typeOf = (t?: string) =>
       t === "input-node" ? ("input" as const)
       : t === "output-node" ? ("output" as const)
       : t === "human-node" ? ("human" as const)
       : ("agent" as const);
     return {
-      id: "default",
-      name: "Fluxo principal",
+      id: workspace?.flowId ?? "default",
+      name: workspace?.name ?? "Fluxo principal",
       projectPath: project?.path ?? null,
       agentDirs,
       updatedAt: new Date().toISOString(),
@@ -251,6 +276,13 @@ export const useSasori = create<SasoriState>((set, get) => ({
 
   loadFlowMap: (flow) =>
     set({
+      selectedId: null,
+      statuses: {},
+      todos: {},
+      summaries: [],
+      runError: null,
+      finalOutput: null,
+      clone: null,
       agentDirs: flow.agentDirs ?? [],
       nodes: flow.nodes.map((n) => ({
         id: n.id,
@@ -259,7 +291,7 @@ export const useSasori = create<SasoriState>((set, get) => ({
           : n.type === "output" ? "output-node"
           : n.type === "human" ? "human-node"
           : "agent-node",
-        position: n.position,
+        position: upgradedStarterPosition(n.id, n.position),
         data:
           n.type === "agent" ? { agent: n.agent }
           : n.type === "input" ? { task: n.input?.task ?? "" }
@@ -274,4 +306,62 @@ export const useSasori = create<SasoriState>((set, get) => ({
 export function refreshPresets(): void {
   const { project, agentDirs, setPresets } = useSasori.getState();
   api.presets(project?.path ?? null, agentDirs).then(setPresets).catch(() => {});
+}
+
+/** Descobre skills reutilizáveis do projeto e das pastas globais. */
+export function refreshSkills(): void {
+  const { project, setSkillLibrary } = useSasori.getState();
+  api.skills(project?.path ?? null).then(setSkillLibrary).catch(() => setSkillLibrary([]));
+}
+
+/** Salva o canvas atual e abre outro workspace, mantendo cada projeto isolado. */
+export async function openWorkspace(workspace: Workspace): Promise<void> {
+  const state = useSasori.getState();
+  if (state.running) throw new Error("Pare a execução atual antes de trocar de projeto.");
+
+  if (state.activeWorkspaceId) {
+    await api.saveFlow(state.toFlowMap());
+  }
+
+  let flow: FlowMap;
+  try {
+    flow = await api.loadFlow(workspace.flowId);
+  } catch {
+    flow = {
+      id: workspace.flowId,
+      name: workspace.name,
+      projectPath: workspace.projectPath,
+      agentDirs: [],
+      updatedAt: new Date().toISOString(),
+      nodes: [
+        { id: "start-input", type: "input", position: { x: 60, y: 220 }, input: { task: "" } },
+        {
+          id: "start-agent",
+          type: "agent",
+          position: { x: 740, y: 180 },
+          agent: { ...DEFAULT_AGENT },
+        },
+        { id: "start-output", type: "output", position: { x: 1420, y: 220 } },
+      ],
+      edges: [
+        { id: "e1", source: "start-input", target: "start-agent" },
+        { id: "e2", source: "start-agent", target: "start-output" },
+      ],
+    };
+  }
+
+  state.loadFlowMap(flow);
+  state.setActiveWorkspaceId(workspace.id);
+  if (workspace.projectPath) {
+    try {
+      const info = await api.validateProject(workspace.projectPath);
+      state.setProject(info.exists ? info : null);
+    } catch {
+      state.setProject(null);
+    }
+  } else {
+    state.setProject(null);
+  }
+  refreshPresets();
+  refreshSkills();
 }

@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import type { AgentRunner, RunnerEvent } from "./types.js";
+import { toolCommand } from "./toolPath.js";
 
 // ─── Runner: Claude Code (modo não-interativo) ──────────────────────────────
 //
@@ -28,7 +29,7 @@ export const runClaudeCode: AgentRunner = ({ systemPrompt, userPrompt, cwd, onEv
     ];
 
     // MARIONETTE_CLAUDE_BIN: caminho custom do binário (útil se fora do PATH)
-    const child = spawn(process.env.MARIONETTE_CLAUDE_BIN || "claude", args, {
+    const child = spawn(toolCommand("claude-code"), args, {
       cwd,
       shell: process.platform === "win32",
       signal,
